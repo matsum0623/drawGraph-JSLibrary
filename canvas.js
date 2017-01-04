@@ -4,13 +4,29 @@
  */
 class drawGraph{
     /**
-     * コンストラクタ
-     * @param    
-     * @param
+     * 
+     * @param {type} width
+     * @param {type} height
+     * @param {type} id 
+     * @returns {drawGraph}
      */
-    constructor(width,height){
-//        alert();
+    constructor(id,width,height){
+        // パラメータの用意
+        this.id = id;
+        this.width = width;
+        this.height = height;
     }
-    
-    
+    /**
+     * 棒グラフを描画
+     * @returns {type} 
+     */
+    drawBarGraph(){}
+    /**
+     * 折れ線グラフを描画
+     */
+    drawLineGraph(){}
+    /**
+     * 円グラフを描画
+     */
+    drawCircleGraph(){}
 }
