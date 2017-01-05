@@ -3,11 +3,61 @@
     <title>グラフ描画Library</title>
     <script src="./canvas.js"></script>
     <script>
-        let test = new drawGraph("MyCanvas",800,600);
+        function doCanvas(){
+            // 描画するデータ(折れ線グラフ）
+            var lineGraphData = [
+                [10,10],
+                [20,45]
+            ];
+            
+            // 描画するデータ(棒グラフ)
+            var barGraphData = [
+                [50,100],
+                [100,200],
+                [150,250],
+                [200,120],
+                [250,300]
+            ];
+            
+        
+            // キャンバスのインスタンス生成(id,width,height)
+            var MyCan = new drawGraph("MyCanvas",800,500);
+        
+            // 基準点の設定
+            MyCan.setOp(50,50);
+            
+            // テキストカラーの変更
+            MyCan.setTextColor("rgb(00,00,00)");
+        
+            // 横軸の基準線間隔の設定
+            MyCan.setUnitX(50);
+            MyCan.setUnitXText("時間");
+        
+            // 縦軸の基準線間隔の設定
+            MyCan.setUnitY(50);
+            MyCan.setUnitYText("距離");
+            
+            // 折れ線グラフの追加
+            MyCan.CreateLineGraph(lineGraphData);
+            
+            // 棒グラフの追加
+            MyCan.setBarColor("rgb(00,255,255)");
+            MyCan.CreateBarGraph(barGraphData);
+        }
     </script>
 </head>
 <body>
-    <div id="MyCanvas">
-        キャンバスの範囲
+    <div id="wrapper">
+        <div id="content">
+            <div>
+                <canvas id="MyCanvas" width="800" height="500" style="border:solid 1px;">
+                    図形を表示するには、canvasタグをサポートしたブラウザが必要です。
+                </canvas>
+            </div>
+            <div>
+                <input type="button" onclick="doCanvas();" value="描画">
+            </div>
+        </div>
     </div>
 </body>
+</html>
