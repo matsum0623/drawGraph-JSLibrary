@@ -37,6 +37,8 @@ class drawGraph{
         this.unitXText = "";
         /** 横軸の単位記載 */
         this.unitYText = "";
+        /** 軸の色 */
+        this.axisColor = "rgb(00,00,00)";
         
         /** 文字色 */
         this.textColor = "rgb(00,00,00)";
@@ -70,7 +72,34 @@ class drawGraph{
      * 棒グラフを描画
      * @returns {type} 
      */
-    drawBarGraph(){}
+    drawBarGraph(data){
+
+        // 棒グラフの幅
+        let barWidth = this.barWidth;
+        // 基準点X
+        let opX = this.opX;
+        // 基準点Y
+        let opY = this.opY;
+        
+        // グラフ間隔の計算
+        const xCount = data.length;
+        const xInterval = (this.maxX - opX) / (xCount + 1);
+        
+        this.unitX = xInterval;
+        
+        // 軸の生成
+        this.CreateAxis();
+        
+        // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす）
+        for(let i=0;i<data.length;i++){
+            let xPosition = opX + (xInterval * (i+1)) - barWidth/2;
+            let yPosition = opY - 1;
+            this.DrawFillBox(xPosition, yPosition,barWidth,data[i][1],this.barFillColor,this.barLineColor,false);
+            
+            // 文字の描画
+            this.DrawFillText(xPosition,yPosition + 15,data[i][0],40);
+        }
+    }
     /**
      * 折れ線グラフを描画
      */
@@ -92,7 +121,6 @@ class drawGraph{
             this.setOpX(opX);
             this.setOpY(opY);
         }
-
         /**
          * 基準点Xの設定（引数は左端からの距離
          * @param {type} opX
@@ -101,7 +129,6 @@ class drawGraph{
         setOpX(opX){
             this.opX = opX;
         }
-        
         /**
          * 基準点Yの設定（引数は下端からの距離）
          * @param {type} opY
@@ -110,7 +137,6 @@ class drawGraph{
         setOpY(opY){
             this.opY = this.height - opY;
         }
-        
         /**
          * テキスト色の設定
          * @param {type} textColor
@@ -119,7 +145,6 @@ class drawGraph{
         setTextColor(textColor){
             this.textColor = textColor;
         }
-        
         /**
          * 
          * @param {type} textFont
@@ -128,7 +153,6 @@ class drawGraph{
         setTextFont(textFont){
             this.textFont = textFont;
         }
-
         /**
          * 縦軸の単位線の設定
          * @param {type} unitY
@@ -137,7 +161,6 @@ class drawGraph{
         setUnitY(unitY){
             this.unitY = unitY;
         }
-        
         /**
          * 横軸の単位線の設定
          * @param {type} unitX
@@ -146,7 +169,6 @@ class drawGraph{
         setUnitX(unitX){
             this.unitX = unitX;
         }
-        
         /**
          * 縦軸の単位表記の設定
          * @param {type} unitYText
@@ -155,7 +177,6 @@ class drawGraph{
         setUnitYText(unitYText){
             this.unitYText = unitYText;
         }
-        
         /**
          * 横軸の単位表記の設定
          * @param {type} unitXText
@@ -164,7 +185,6 @@ class drawGraph{
         setUnitXText(unitXText){
             this.unitXText = unitXText;
         }
-
         /**
          * 
          * @param {type} lineWidth
@@ -173,7 +193,6 @@ class drawGraph{
         setLineWidth(lineWidth){
             this.lineWidth = lineWidth;
         }
-        
         /**
          * 
          * @param {type} lineColor
@@ -182,7 +201,6 @@ class drawGraph{
         setLineColor(lineColor){
             this.lineColor = lineColor;
         }
-        
         /**
          * 
          * @param {type} fillColor
@@ -191,7 +209,6 @@ class drawGraph{
         setFillColor(fillColor){
             this.fillColor = fillColor;
         }
-        
         /**
          * 折れ線グラフの黒丸のサイズ設定
          * @param {type} circleRad
@@ -200,7 +217,6 @@ class drawGraph{
         setCircleRad(circleRad){
             this.circleRad = circleRad;
         }
-        
         /**
          * 折れ線グラフの丸の色
          * @param {type} circleColor
@@ -209,7 +225,6 @@ class drawGraph{
         setCircleColor(circleColor){
             this.circleColor = circleColor;
         }
-        
         /**
          * 
          * @param {type} circleLineColor
@@ -218,7 +233,6 @@ class drawGraph{
         setCircleLineColor(circleLineColor){
             this.circleLineColor = circleLineColor;
         }
-
         /**
          * 
          * @param {type} circleLineWidth
@@ -227,7 +241,6 @@ class drawGraph{
         setCircleLineWidth(circleLineWidth){
             this.circleLineWidth = circleLineWidth;
         }
-
         /**
          * 棒グラフの幅を設定
          * @param {type} barWidth
@@ -236,7 +249,6 @@ class drawGraph{
         setBarWidth(barWidth){
             this.barWidth = barWidth;
         }
-        
         /**
          * 折れ線グラフの枠線の色
          * @param {type} barLineColor
@@ -245,7 +257,6 @@ class drawGraph{
         setBarLineColor(barLineColor){
             this.barLineColor = barLineColor;            
         }
-
         /**
          * 　棒グラフの色の設定
          * @param {type} barFillColor
@@ -254,7 +265,6 @@ class drawGraph{
         setBarFillColor(barFillColor){
             this.barFillColor = barFillColor;
         }
-        
         /**
          * 棒グラフの枠線と塗りつぶし色の設定
          * @param {type} barColor
@@ -263,6 +273,15 @@ class drawGraph{
         setBarColor(barColor){
             this.barFillColor = barColor;
             this.barLineColor = barColor;
+        }
+
+        /**
+         * 基本軸の色の設定
+         * @param {type} barFillColor
+         * @returns {undefined}
+         */
+        setAxisColor(axisColor){
+            this.axisColor = axisColor;
         }
     ///////////////////////////////////////////////////////////////////////////
     
@@ -359,24 +378,27 @@ class drawGraph{
          * 縦軸/横軸を描画
          * @returns void
          */
-        CreateAxis(){
+        CreateAxis(axisColor){
+            // 描画色の設定（軸は全てrgb(00,00,00)）
+            axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axisColor;
+            
             // 縦軸描画
-            this.DrawLine(this.opX,this.opY,this.opX,this.maxY);
+            this.DrawLine(this.opX,this.opY,this.opX,this.maxY,1,axisColor);
             // 縦軸単位線描画
             var tmpY = this.opY - this.unitY; 
             while(tmpY > this.maxY){
-                this.DrawLine(this.opX-3,tmpY,this.opX+3,tmpY);
+                this.DrawLine(this.opX-3,tmpY,this.opX+3,tmpY,1,axisColor);
                 tmpY = tmpY - this.unitY;
             }
             // 縦軸単位表記描画
             this.DrawFillText(30,30,this.unitXText);
             
             // 横軸描画
-            this.DrawLine(this.opX,this.opY,this.maxX,this.opY);
+            this.DrawLine(this.opX,this.opY,this.maxX,this.opY,1,axisColor);
             // 横軸単位線描画
             var tmpX = this.opX + this.unitX; 
             while(tmpX < this.maxX){
-                this.DrawLine(tmpX,this.opY-3,tmpX,this.opY+3);
+                this.DrawLine(tmpX,this.opY-3,tmpX,this.opY+3,1,axisColor);
                 tmpX = tmpX + this.unitX;
             }
             // 縦軸単位表記描画
@@ -407,26 +429,4 @@ class drawGraph{
                 }
             }
         }
-        
-        /**
-         * 棒グラフを作成する
-         * @param {type} data
-         * @returns {undefined}
-         */
-        CreateBarGraph(data){
-            // 軸の生成
-            this.CreateAxis();
-
-            // 棒グラフの幅
-            let barWidth = this.barWidth;
-            // 基準点X
-            let opX = this.opX;
-            // 基準点Y
-            let opY = this.opY;
-            // グラフの描画（基準線との重複を避けるため、下線は基準-1。上方へ動かす）
-            for(let i=0;i<data.length;i++){
-                this.DrawFillBox(opX + data[i][0] - barWidth/2, opY-1,barWidth,data[i][1],this.barFillColor,this.barLineColor,false);
-            }
-        }
-    
 }

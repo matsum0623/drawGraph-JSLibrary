@@ -12,11 +12,12 @@
             
             // 描画するデータ(棒グラフ)
             var barGraphData = [
-                [50,100],
-                [100,200],
-                [150,250],
-                [200,120],
-                [250,300]
+                ["1月",100],
+                ["2月",200],
+                ["3月",250],
+                ["4月",120],
+                ["5月",300],
+                ["6月",80]
             ];
             
         
@@ -29,20 +30,21 @@
             // テキストカラーの変更
             MyCan.setTextColor("rgb(00,00,00)");
         
-            // 横軸の基準線間隔の設定
-            MyCan.setUnitX(50);
+            // 横軸の
             MyCan.setUnitXText("時間");
         
             // 縦軸の基準線間隔の設定
             MyCan.setUnitY(50);
             MyCan.setUnitYText("距離");
             
+            MyCan.setAxisColor("rgb(00,00,00)");
+            
             // 折れ線グラフの追加
-            MyCan.CreateLineGraph(lineGraphData);
+//            MyCan.CreateLineGraph(lineGraphData);
             
             // 棒グラフの追加
-            MyCan.setBarColor("rgb(00,255,255)");
-            MyCan.CreateBarGraph(barGraphData);
+            MyCan.setBarColor("rgb(00,00,00)");
+            MyCan.drawBarGraph(barGraphData);
         }
     </script>
 </head>
@@ -57,6 +59,39 @@
             <div>
                 <input type="button" onclick="doCanvas();" value="描画">
             </div>
+        </div>
+        <div>
+            データ指定
+            <table>
+                <tr>
+                    <th>
+                        ラベル
+                    </th>
+                    <th>
+                        数値
+                    </th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>100</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>200</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>250</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>120</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>300</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
