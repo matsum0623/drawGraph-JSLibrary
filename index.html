@@ -17,7 +17,13 @@
                 ["3月",250],
                 ["4月",120],
                 ["5月",300],
-                ["6月",80]
+                ["6月",80],
+                ["7月",11],
+                ["8月",0],
+                ["9月",320],
+                ["10月",278],
+                ["11月",156],
+                ["12月",367]
             ];
             
         
@@ -25,25 +31,25 @@
             var MyCan = new drawGraph("MyCanvas",800,500);
         
             // 基準点の設定
-            MyCan.setOp(50,50);
+//            MyCan.setOp(50,50);
             
             // テキストカラーの変更
-            MyCan.setTextColor("rgb(00,00,00)");
+//            MyCan.setTextColor("rgb(00,00,00)");
         
             // 横軸の
-            MyCan.setUnitXText("時間");
+//            MyCan.setUnitXText("時間");
         
             // 縦軸の基準線間隔の設定
-            MyCan.setUnitY(50);
-            MyCan.setUnitYText("距離");
+//            MyCan.setUnitY(50);
+//            MyCan.setUnitYText("距離");
             
-            MyCan.setAxisColor("rgb(00,00,00)");
+//            MyCan.setAxisColor("rgb(00,00,00)");
             
             // 折れ線グラフの追加
 //            MyCan.CreateLineGraph(lineGraphData);
             
             // 棒グラフの追加
-            MyCan.setBarColor("rgb(00,00,00)");
+//            MyCan.setBarColor("rgb(00,00,00)");
             MyCan.drawBarGraph(barGraphData);
         }
     </script>

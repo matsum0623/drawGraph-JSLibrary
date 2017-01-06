@@ -24,15 +24,15 @@ class drawGraph{
         this.ctx = this.canvas.getContext('2d');
         
         /** 軸描画用基準点設定（左下を基準点とする）*/
-        this.opX  = 10;                 // 基準点X
-        this.opY  = this.height - 10;   // 基準点Y
-        this.maxX = this.width  - 50;   // 最大X
-        this.maxY = 50;                 // 最大Y
+        this.opX  = 30;                 // 基準点X
+        this.opY  = this.height - 30;   // 基準点Y
+        this.maxX = this.width  - 30;   // 最大X
+        this.maxY = 30;                 // 最大Y
         
         /** 縦軸の単位 */
-        this.unitY = 10;
+        this.unitY = 50;
         /** 横軸の単位 */
-        this.unitX = 10;
+        this.unitX = 50;
         /** 縦軸の単位記載 */
         this.unitXText = "";
         /** 横軸の単位記載 */
@@ -81,24 +81,40 @@ class drawGraph{
         // 基準点Y
         let opY = this.opY;
         
-        // グラフ間隔の計算
+        // グラフ間隔の計算(X軸)
         const xCount = data.length;
         const xInterval = (this.maxX - opX) / (xCount + 1);
         
-        this.unitX = xInterval;
+        // Y軸最大値計算用
+        let maxYdata = 0;
+        for(let i=0;i<data.length;i++){
+            // Y軸最大値の再計算
+            if(maxYdata < data[i][1]){
+                maxYdata = data[i][1];
+            }
+        }
+        // Y軸の計算
+        const yCount = Math.floor(maxYdata / this.unitY)
+        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1)
         
         // 軸の生成
-        this.CreateAxis();
-        
+        this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
+
         // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす）
         for(let i=0;i<data.length;i++){
             let xPosition = opX + (xInterval * (i+1)) - barWidth/2;
             let yPosition = opY - 1;
-            this.DrawFillBox(xPosition, yPosition,barWidth,data[i][1],this.barFillColor,this.barLineColor,false);
+            
+            // データを基準に合わせて処理
+            let yData = (data[i][1] / this.unitY) * yInterval;
+            
+            this.DrawFillBox(xPosition, yPosition, barWidth, yData, this.barFillColor, this.barLineColor, false);
             
             // 文字の描画
-            this.DrawFillText(xPosition,yPosition + 15,data[i][0],40);
+            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+            
         }
+
     }
     /**
      * 折れ線グラフを描画
@@ -274,7 +290,6 @@ class drawGraph{
             this.barFillColor = barColor;
             this.barLineColor = barColor;
         }
-
         /**
          * 基本軸の色の設定
          * @param {type} barFillColor
@@ -376,33 +391,52 @@ class drawGraph{
         
         /**
          * 縦軸/横軸を描画
+         * @param {text} axisColor 軸の色
+         * @param {int} opX 基準点のX位置
+         * @param {int} opY 基準点のY位置
+         * @param {int} maxX X軸の最大位置
+         * @param {int} maxY Y軸の最大位置
+         * @param {int} unitX X軸の単位間隔
+         * @param {int} unitY Y軸の単位間隔
+         * @param {text} unitXText X軸の単位表記
+         * @param {text} unitYText Y軸の単位表記
          * @returns void
          */
-        CreateAxis(axisColor){
-            // 描画色の設定（軸は全てrgb(00,00,00)）
+        CreateAxis(axisColor,opX,opY,maxX,maxY,unitX,unitY,unitXText,unitYText){
+            // 描画色の設定
             axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axisColor;
             
+            opX = typeof opX !== 'undefined' ? opX : this.opX;
+            opY = typeof opY !== 'undefined' ? opY : this.opY;
+            maxX = typeof maxX !== 'undefined' ? maxX : this.maxX;
+            maxY = typeof maxY !== 'undefined' ? maxY : this.maxY;
+            
+            unitX = typeof unitX !== 'undefined' ? unitX : this.unitX;
+            unitY = typeof unitY !== 'undefined' ? unitY : this.unitY;
+            unitXText = typeof unitXText !== 'undefined' ? unitXText : this.unitXText;
+            unitYText = typeof unitYText !== 'undefined' ? unitYText : this.unitYText;
+            
             // 縦軸描画
-            this.DrawLine(this.opX,this.opY,this.opX,this.maxY,1,axisColor);
+            this.DrawLine(opX,opY,opX,maxY,1,axisColor);
             // 縦軸単位線描画
-            var tmpY = this.opY - this.unitY; 
-            while(tmpY > this.maxY){
-                this.DrawLine(this.opX-3,tmpY,this.opX+3,tmpY,1,axisColor);
-                tmpY = tmpY - this.unitY;
+            var tmpY = opY - unitY; 
+            while(tmpY > maxY){
+                this.DrawLine(opX-3,tmpY,opX+3,tmpY,1,axisColor);
+                tmpY = tmpY - unitY;
             }
             // 縦軸単位表記描画
-            this.DrawFillText(30,30,this.unitXText);
+            this.DrawFillText(30,30,unitXText);
             
             // 横軸描画
-            this.DrawLine(this.opX,this.opY,this.maxX,this.opY,1,axisColor);
+            this.DrawLine(opX,opY,maxX,opY,1,axisColor);
             // 横軸単位線描画
-            var tmpX = this.opX + this.unitX; 
-            while(tmpX < this.maxX){
-                this.DrawLine(tmpX,this.opY-3,tmpX,this.opY+3,1,axisColor);
-                tmpX = tmpX + this.unitX;
+            var tmpX = opX + unitX; 
+            while(tmpX < maxX){
+                this.DrawLine(tmpX,opY-3,tmpX,opY+3,1,axisColor);
+                tmpX = tmpX + unitX;
             }
             // 縦軸単位表記描画
-            this.DrawFillText(this.maxX,this.height-30,this.unitYText);
+            this.DrawFillText(maxX,this.height-30,unitYText);
         }
 
         /**
