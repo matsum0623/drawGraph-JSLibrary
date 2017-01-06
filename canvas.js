@@ -18,25 +18,25 @@ class drawGraph{
         
         /** キャンバスの取得 */
         this.canvas = document.getElementById(canvas);
-// TODO DOM描画前に呼び出されるとエラーとなる
-        
+// TODO DOM描画前に呼び出されるとエラーとなる現象の回避
+
         /** コンテキストの設定 */
         this.ctx = this.canvas.getContext('2d');
         
         /** 軸描画用基準点設定（左下を基準点とする）*/
-        this.opX  = 30;                 // 基準点X
-        this.opY  = this.height - 30;   // 基準点Y
-        this.maxX = this.width  - 30;   // 最大X
-        this.maxY = 30;                 // 最大Y
+        this.opX  = 50;                 // 基準点X
+        this.opY  = this.height - 50;   // 基準点Y
+        this.maxX = this.width  - 50;   // 最大X
+        this.maxY = 50;                 // 最大Y
         
         /** 縦軸の単位 */
         this.unitY = 50;
         /** 横軸の単位 */
         this.unitX = 50;
         /** 縦軸の単位記載 */
-        this.unitXText = "";
+        this.unitXText = "横軸";
         /** 横軸の単位記載 */
-        this.unitYText = "";
+        this.unitYText = "縦軸";
         /** 軸の色 */
         this.axisColor = "rgb(00,00,00)";
         
@@ -62,7 +62,7 @@ class drawGraph{
         this.circleLineColor = "rgb(00,00,00)";
         
         /** 棒グラフの幅 */
-        this.barWidth = 10;
+        this.barWidth = 30;
         /** 棒グラフの枠線の色 */
         this.barLineColor = "rgb(00,00,00)";
         /** 棒グラフの塗りつぶしの色 */
