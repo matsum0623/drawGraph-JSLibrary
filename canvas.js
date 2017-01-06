@@ -6,9 +6,9 @@
 class drawGraph{
     /**
      * 
+     * @param {type} canvas
      * @param {type} width
      * @param {type} height
-     * @param {type} id 
      * @returns {drawGraph}
      */
     constructor(canvas,width,height){
@@ -70,7 +70,8 @@ class drawGraph{
     }
     /**
      * 棒グラフを描画
-     * @returns {type} 
+     * @param {type} data
+     * @returns {undefined}
      */
     drawBarGraph(data){
 
@@ -94,8 +95,8 @@ class drawGraph{
             }
         }
         // Y軸の計算
-        const yCount = Math.floor(maxYdata / this.unitY)
-        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1)
+        const yCount = Math.floor(maxYdata / this.unitY);
+        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1);
         
         // 軸の生成
         this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
@@ -292,7 +293,7 @@ class drawGraph{
         }
         /**
          * 基本軸の色の設定
-         * @param {type} barFillColor
+         * @param {type} axisColor
          * @returns {undefined}
          */
         setAxisColor(axisColor){
@@ -328,7 +329,7 @@ class drawGraph{
          * @param {int} x         X座標
          * @param {int} y         Y座標
          * @param {int} rad       半径
-         * @param {String} color  塗りつぶしの色
+         * @param {String} fillColor  塗りつぶしの色
          * @param {boolean} flg   基準フラグ（true：左上、false：左下）
          * @returns void        
          */
@@ -377,7 +378,9 @@ class drawGraph{
          * @param {type} x
          * @param {type} y
          * @param {type} text
+         * @param {type} maxLength 
          * @param {type} textColor
+         * @param {type} font 
          * @returns {undefined}
          */
         DrawFillText(x,y,text,maxLength,textColor,font){
