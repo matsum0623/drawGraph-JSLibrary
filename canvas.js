@@ -62,11 +62,25 @@ class drawGraph{
         /** 折れ線グラフ中の丸の大きさ */
         this.circleRad = 2;
         /** 折れ線グラフの丸の色 */
-        this.circleColor = "rgb(00,00,00)";
+        this.circleColor = [
+            "rgb(255,00,00)",
+            "rgb(00,255,00)",
+            "rgb(00,00,255)",
+            "rgb(255,255,00)",
+            "rgb(255,00,255)",
+            "rgb(00,255,255)"            
+        ];
         /** 折れ線グラフの線の太さ */
         this.circleLineWidth = 1;
         /** 折れ線グラフの線の色 */
-        this.circleLineColor = "rgb(00,00,00)";
+        this.circleLineColor = [
+            "rgb(255,00,00)",
+            "rgb(00,255,00)",
+            "rgb(00,00,255)",
+            "rgb(255,255,00)",
+            "rgb(255,00,255)",
+            "rgb(00,255,255)"            
+        ];
         
         /** 棒グラフの幅 */
         this.barWidth = 10;
@@ -142,10 +156,61 @@ class drawGraph{
     }
     /**
      * 折れ線グラフを描画
+     * @@param {array} data 
      */
-    drawLineGraph(){
+    drawLineGraph(data){
+        if(!this.checkCanvas() || !this.checkData(data)){
+            return;
+        }
+        // 基準点X
+        let opX = this.opX;
+        // 基準点Y
+        let opY = this.opY;
         
+        // グラフ間隔の計算(X軸)
+        const xCount = data.length;
+        const xInterval = (this.maxX - opX) / (xCount + 1);
         
+        // 1グループのデータ数の取得
+        const drawDataCount = data[0].length - 1;
+        
+        // Y軸最大値計算用
+        let maxYdata = 0;
+        for(let i=0;i<data.length;i++){
+            for(let j=1;j<drawDataCount+1;j++){
+                // Y軸最大値の再計算
+                if(maxYdata < data[i][j]){
+                    maxYdata = data[i][j];
+                }
+            }
+        }
+        // Y軸の計算
+        const yCount = Math.floor(maxYdata / this.unitY);
+        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1);
+        
+        // 軸の生成
+        this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
+
+        // 黒丸の大きさ
+        let circleRad = this.circleRad;
+            
+        // グラフの描画
+        for(let i=0;i<data.length;i++){
+            let xPosition = opX + (xInterval * (i+1));
+            let yPosition = opY - 1;
+
+            for(let j=1;j<data[i].length;j++){
+                let yData = (data[i][j] / this.unitY) * yInterval;
+                this.DrawFillCircle(xPosition, opY - yData, circleRad, this.circleColor[j-1]);
+                
+                if(data[i+1]){
+                    this.DrawLine(xPosition, opY - yData, xPosition + xInterval, opY - (data[i+1][j] / this.unitY) * yInterval,this.lineWidth, this.circleLineColor[j-1]);
+                }
+            }
+
+            // 文字の描画
+            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+        }
     }
     /**
      * 円グラフを描画
@@ -328,6 +393,26 @@ class drawGraph{
             }else{
                 return true;
             }
-        } 
+        }
         
+        /**
+         * 
+         * @param {array} data  グラフデータ
+         * @param {int} type    グラフ種別
+         * @returns {Boolean}
+         */
+        checkData(data = '',type){
+            if(data === null || data === ''){
+                return false;
+            }
+            switch(type){
+                case 1 : // 棒グラフ
+                    break;
+                case 2 : // 折れ線グラフ
+                    break;
+                case 3 : // 円グラフ
+                    break;
+            }
+            return true;
+        }
 }

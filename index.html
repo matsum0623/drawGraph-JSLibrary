@@ -6,8 +6,18 @@
         function doCanvas(){
             // 描画するデータ(折れ線グラフ）
             var lineGraphData = [
-                [10,10],
-                [20,45]
+                ["1月",100  ,137 ,156],
+                ["2月",200  ,32  ,176],
+                ["3月",250  ,167 ,87],
+                ["4月",120  ,367 ,257],
+                ["5月",300  ,212 ,19],
+                ["6月",80   ,78  ,91],
+                ["7月",11   ,345 ,187],
+                ["8月",0    ,198 ,99],
+                ["9月",320  ,0   ,248],
+                ["10月",278 ,10  ,378],
+                ["11月",156 ,20  ,159],
+                ["12月",367 ,30  ,234]
             ];
             
             // 描画するデータ(棒グラフ)
@@ -46,11 +56,11 @@
 //            MyCan.setAxisColor("rgb(00,00,00)");
             
             // 折れ線グラフの追加
-//            MyCan.CreateLineGraph(lineGraphData);
+            MyCan.drawLineGraph(lineGraphData);
             
             // 棒グラフの追加
 //            MyCan.setBarColor("rgb(00,00,00)");
-            MyCan.drawBarGraph(barGraphData);
+//            MyCan.drawBarGraph(barGraphData);
         }
     </script>
 </head>
