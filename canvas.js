@@ -95,6 +95,17 @@ class drawGraph{
             "rgb(255,00,255)",
             "rgb(00,255,255)"            
         ];
+
+        /** 円グラフの塗りつぶしの色 */
+        this.fanColor = [
+            "rgb(255,00,00)",
+            "rgb(00,255,00)",
+            "rgb(00,00,255)",
+            "rgb(255,255,00)",
+            "rgb(255,00,255)",
+            "rgb(00,255,255)"            
+        ];
+    
     }
     /**
      * 棒グラフを描画
@@ -214,8 +225,31 @@ class drawGraph{
     }
     /**
      * 円グラフを描画
+     * @param {array} data 
      */
-    drawCircleGraph(){}
+    drawCircleGraph(data){
+        if(!this.checkCanvas() || !this.checkData(data)){
+            return;
+        }
+        
+        // 円グラフの中心点
+        const op  = [this.width/2,this.height/2];
+        // 円グラフの半径（描画範囲の短い側の35%の長さ）
+        const rad = (this.width < this.height ? this.width : this.height) * 0.35;
+        
+        // 円グラフのそれぞれのパーセントの計算
+        let dataSum = 0;
+        for(let i=0;i<data.length;i++){
+            dataSum = dataSum + data[i][1];
+        }
+        // 円グラフ描画
+        let startAng = 0;
+        for(let i=0;i<data.length;i++){
+            this.DrawFillFan(op[0],op[1],rad,startAng, startAng + Math.PI*2*(data[i][1]/dataSum),this.fanColor[i]);
+            startAng = startAng + Math.PI*2*(data[i][1]/dataSum);
+        }
+        
+    }
         
     // 内部関数 ///////////////////////////////////////////////////////////////
         /**
@@ -260,6 +294,30 @@ class drawGraph{
             this.ctx.fillStyle   = fillColor;
             this.ctx.strokeStyle = fillColor;
             this.ctx.stroke();
+            this.ctx.fill();
+        }
+        
+        /**
+         * 塗りつぶした扇形を作成
+         * 基準点は真上に修正される
+         * @param {type} x
+         * @param {type} y
+         * @param {type} rad
+         * @param {type} startAng
+         * @param {type} endAng
+         * @param {type} fillColor
+         * @returns {undefined}
+         */
+        DrawFillFan(x,y,rad,startAng,endAng,fillColor){
+            fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
+            
+            startAng = startAng - Math.PI/2;
+            endAng   = endAng   - Math.PI/2;
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(x,y);
+            this.ctx.arc(x, y, rad, startAng, endAng, false);
+            this.ctx.fillStyle = fillColor;
             this.ctx.fill();
         }
         
@@ -359,36 +417,11 @@ class drawGraph{
         }
 
         /**
-         * 折れ線グラフを描画
-         * @param {array()} data    描画データ
-         * @returns {void}
-         */
-        CreateLineGraph(data){
-            // 軸の生成
-            this.CreateAxis();
-
-            // 基準点X
-            let opX = this.opX + 10;
-            // 基準点Y
-            let opY = this.opY;
-            // 黒丸の大きさ
-            let circleRad = this.circleRad;
-            
-            // グラフの描画
-            for(let i=0;i<data.length;i++){
-                this.DrawFillCircle(opX + data[i][0],opY - data[i][1],circleRad);
-                if(data[i+1]){
-                    this.DrawLine(opX + data[i][0],opY-data[i][1],opX + data[i+1][0],opY-data[i+1][1]);
-                }
-            }
-        }
-        
-        /**
          * canvas要素の取得チェック
          * @returns {Boolean}
          */
         checkCanvas(){
-            if(this.canvas === null){
+            if(this.canvas === null || !this.canvas.getContext){
                 return false;
             }else{
                 return true;
