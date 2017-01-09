@@ -32,7 +32,7 @@ class drawGraph{
         
         /** 軸描画用基準点設定（左下を基準点とする）*/
         this.opX  = 50;                 // 基準点X
-        this.opY  = this.height - 50;   // 基準点Y
+        this.opY  = this.height - 70;   // 基準点Y
         this.maxX = this.width  - 50;   // 最大X
         this.maxY = 50;                 // 最大Y
         
@@ -161,9 +161,9 @@ class drawGraph{
             
             // 文字の描画
             this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
-            
         }
 
+        this.CreateLegend(["凡例１","凡例２","凡例３"],this.barFillColor);
     }
     /**
      * 折れ線グラフを描画
@@ -348,6 +348,28 @@ class drawGraph{
         }
         
         /**
+         * 四角形を描画
+         * @param {type} x
+         * @param {type} y
+         * @param {type} width
+         * @param {type} height
+         * @param {type} lineColor
+         * @param {type} flg
+         * @returns {undefined}
+         */
+        DrawBox(x,y,width,height,lineColor,flg){
+            lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
+            flg = typeof flg !== 'undefined' ? flg : true;
+            if(! flg){
+                height = height * (-1);
+            }
+            this.ctx.strokeStyle = lineColor;
+            this.ctx.beginPath();
+            this.ctx.strokeRect(x,y,width,height);
+            this.ctx.stroke();
+        }
+        
+        /**
          * 
          * @param {type} x
          * @param {type} y
@@ -413,7 +435,25 @@ class drawGraph{
                 tmpX = tmpX + unitX;
             }
             // 縦軸単位表記描画
-            this.DrawFillText(maxX,this.height-30,unitYText);
+            this.DrawFillText(maxX,this.height-50,unitYText);
+        }
+
+        /**
+         * 凡例の作成
+         * @param {type} legendText
+         * @param {type} fillColor 
+         * @returns {undefined}
+         */
+        CreateLegend(legendText,fillColor){
+            const legendCount = legendText.length;
+            let tmpX = this.width - (legendCount * 60) - 10;
+            let tmpY = this.height - 40;
+            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,"rgb(00,00,00)",true);
+            
+            for(let i=0; i<legendCount; i++){
+                this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
+                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i],50);
+            }
         }
 
         /**

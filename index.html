@@ -3,7 +3,7 @@
     <title>グラフ描画Library</title>
     <script src="./canvas.js"></script>
     <script>
-        function doCanvas(){
+        function doCanvas(flg){
             // 描画するデータ(折れ線グラフ）
             var lineGraphData = [
                 ["1月",100  ,137 ,156],
@@ -48,14 +48,20 @@
             // キャンバスのインスタンス生成(id,width,height)
             var MyCan = new drawGraph("MyCanvas",800,500);
         
-            // 折れ線グラフの追加
-//            MyCan.drawLineGraph(lineGraphData);
-            
-            // 棒グラフの追加
-//            MyCan.drawBarGraph(barGraphData);
-
-            // 円グラフの追加
-            MyCan.drawCircleGraph(circleGraphData);
+            switch(flg){
+                case 1:
+                    // 折れ線グラフの追加
+                    MyCan.drawLineGraph(lineGraphData);
+                    break;
+                case 2:
+                    // 棒グラフの追加
+                    MyCan.drawBarGraph(barGraphData);
+                    break;
+                case 3:
+                    // 円グラフの追加
+                    MyCan.drawCircleGraph(circleGraphData);
+                    break;
+            }
         }
     </script>
 </head>
@@ -68,41 +74,10 @@
                 </canvas>
             </div>
             <div>
-                <input type="button" onclick="doCanvas();" value="描画">
+                <input type="button" onclick="doCanvas(1);" value="棒グラフ描画">
+                <input type="button" onclick="doCanvas(2);" value="折れ線グラフ描画">
+                <input type="button" onclick="doCanvas(3);" value="円グラフ描画">
             </div>
-        </div>
-        <div>
-            データ指定
-            <table>
-                <tr>
-                    <th>
-                        ラベル
-                    </th>
-                    <th>
-                        数値
-                    </th>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>100</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>200</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>250</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>120</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>300</td>
-                </tr>
-            </table>
         </div>
     </div>
 </body>
