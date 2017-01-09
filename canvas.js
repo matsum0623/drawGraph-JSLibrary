@@ -6,18 +6,25 @@
 class drawGraph{
     /**
      * 
+     * @param {type} canvas
      * @param {type} width
      * @param {type} height
-     * @param {type} id 
      * @returns {drawGraph}
      */
     constructor(canvas,width,height){
-        // パラメータの用意
-        this.width = width;
-        this.height = height;
+        this.width = typeof width !== 'undefined' ? width : 800;
+        this.height = typeof height !== 'undefined' ? height : 500;
         
-        /** キャンバスの取得 */
+        /** キャンバスの取得(canvasサイズのリサイズ) */
         this.canvas = document.getElementById(canvas);
+        if(this.canvas === null){
+            // canvas取得負荷時にHTML最後に追加
+            const newCanvas = document.createElement('canvas');
+            document.body.appendChild(newCanvas);
+            this.canvas = newCanvas;
+        }
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
 // TODO DOM描画前に呼び出されるとエラーとなる現象の回避
 
         /** コンテキストの設定 */
@@ -62,18 +69,28 @@ class drawGraph{
         this.circleLineColor = "rgb(00,00,00)";
         
         /** 棒グラフの幅 */
-        this.barWidth = 30;
+        this.barWidth = 10;
         /** 棒グラフの枠線の色 */
         this.barLineColor = "rgb(00,00,00)";
         /** 棒グラフの塗りつぶしの色 */
-        this.barFillColor = "rgb(00,00,00)";
+        this.barFillColor = [
+            "rgb(255,00,00)",
+            "rgb(00,255,00)",
+            "rgb(00,00,255)",
+            "rgb(255,255,00)",
+            "rgb(255,00,255)",
+            "rgb(00,255,255)"            
+        ];
     }
     /**
      * 棒グラフを描画
-     * @returns {type} 
+     * @param {type} data
+     * @returns {undefined}
      */
     drawBarGraph(data){
-
+        if(!this.checkCanvas()){
+            return;
+        }
         // 棒グラフの幅
         let barWidth = this.barWidth;
         // 基準点X
@@ -85,30 +102,37 @@ class drawGraph{
         const xCount = data.length;
         const xInterval = (this.maxX - opX) / (xCount + 1);
         
+        // 1グループのデータ数の取得
+        const drawDataCount = data[0].length - 1;
+        
         // Y軸最大値計算用
         let maxYdata = 0;
         for(let i=0;i<data.length;i++){
-            // Y軸最大値の再計算
-            if(maxYdata < data[i][1]){
-                maxYdata = data[i][1];
+            for(let j=1;j<drawDataCount+1;j++){
+                // Y軸最大値の再計算
+                if(maxYdata < data[i][j]){
+                    maxYdata = data[i][j];
+                }
             }
         }
         // Y軸の計算
-        const yCount = Math.floor(maxYdata / this.unitY)
-        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1)
+        const yCount = Math.floor(maxYdata / this.unitY);
+        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1);
         
         // 軸の生成
         this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
 
         // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす）
         for(let i=0;i<data.length;i++){
-            let xPosition = opX + (xInterval * (i+1)) - barWidth/2;
+            let xPosition = opX + (xInterval * (i+1)) - (drawDataCount * this.barWidth)/2;
             let yPosition = opY - 1;
-            
-            // データを基準に合わせて処理
-            let yData = (data[i][1] / this.unitY) * yInterval;
-            
-            this.DrawFillBox(xPosition, yPosition, barWidth, yData, this.barFillColor, this.barLineColor, false);
+
+            for(let j=1;j<data[i].length;j++){
+                // データを基準に合わせて処理
+                let yData = (data[i][j] / this.unitY) * yInterval;
+
+                this.DrawFillBox(xPosition + (this.barWidth * (j-1)), yPosition, barWidth, yData, this.barFillColor[j-1], this.barLineColor, false);
+            }
             
             // 文字の描画
             this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
@@ -292,7 +316,7 @@ class drawGraph{
         }
         /**
          * 基本軸の色の設定
-         * @param {type} barFillColor
+         * @param {type} axisColor
          * @returns {undefined}
          */
         setAxisColor(axisColor){
@@ -328,7 +352,7 @@ class drawGraph{
          * @param {int} x         X座標
          * @param {int} y         Y座標
          * @param {int} rad       半径
-         * @param {String} color  塗りつぶしの色
+         * @param {String} fillColor  塗りつぶしの色
          * @param {boolean} flg   基準フラグ（true：左上、false：左下）
          * @returns void        
          */
@@ -377,7 +401,9 @@ class drawGraph{
          * @param {type} x
          * @param {type} y
          * @param {type} text
+         * @param {type} maxLength 
          * @param {type} textColor
+         * @param {type} font 
          * @returns {undefined}
          */
         DrawFillText(x,y,text,maxLength,textColor,font){
@@ -463,4 +489,17 @@ class drawGraph{
                 }
             }
         }
+        
+        /**
+         * canvas要素の取得チェック
+         * @returns {Boolean}
+         */
+        checkCanvas(){
+            if(this.canvas === null){
+                return false;
+            }else{
+                return true;
+            }
+        } 
+        
 }
