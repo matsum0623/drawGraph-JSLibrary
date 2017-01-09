@@ -36,31 +36,26 @@
                 ["12月",367 ,30  ,234]
             ];
             
+            // 描画するデータ（円グラフ）
+            const circleGraphData = [
+                ['10代',60],
+                ['20代',20],
+                ['30代',30],
+                ['40代',40],
+                ['50代',50]
+            ]
         
             // キャンバスのインスタンス生成(id,width,height)
             var MyCan = new drawGraph("MyCanvas",800,500);
         
-            // 基準点の設定
-//            MyCan.setOp(50,50);
-            
-            // テキストカラーの変更
-//            MyCan.setTextColor("rgb(00,00,00)");
-        
-            // 横軸の
-//            MyCan.setUnitXText("時間");
-        
-            // 縦軸の基準線間隔の設定
-//            MyCan.setUnitY(50);
-//            MyCan.setUnitYText("距離");
-            
-//            MyCan.setAxisColor("rgb(00,00,00)");
-            
             // 折れ線グラフの追加
-            MyCan.drawLineGraph(lineGraphData);
+//            MyCan.drawLineGraph(lineGraphData);
             
             // 棒グラフの追加
-//            MyCan.setBarColor("rgb(00,00,00)");
 //            MyCan.drawBarGraph(barGraphData);
+
+            // 円グラフの追加
+            MyCan.drawCircleGraph(circleGraphData);
         }
     </script>
 </head>
