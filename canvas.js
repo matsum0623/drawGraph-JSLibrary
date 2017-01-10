@@ -30,6 +30,11 @@ class drawGraph{
         /** コンテキストの設定 */
         this.ctx = this.canvas.getContext('2d');
         
+        /** グラフタイトル */
+        this.titleText = "";
+        /** グラフタイトル表示位置(0:上,1:下) */
+        this.titlePosition = 0;
+        
         /** 軸描画用基準点設定（左下を基準点とする）*/
         this.opX  = 50;                 // 基準点X
         this.opY  = this.height - 70;   // 基準点Y
@@ -167,6 +172,7 @@ class drawGraph{
         }
 
         this.CreateLegend(legendText,this.barFillColor);
+        this.CreateTitle(this.titleText,this.titlePosition);
     }
     /**
      * 折れ線グラフを描画
@@ -228,6 +234,7 @@ class drawGraph{
 
         // 凡例の描画
         this.CreateLegend(legendText,this.barFillColor);
+        this.CreateTitle(this.titleText,this.titlePosition);
     }
     /**
      * 円グラフを描画
@@ -257,6 +264,7 @@ class drawGraph{
         
         // 凡例の描画
         this.CreateLegend(legendText,this.barFillColor);
+        this.CreateTitle(this.titleText,this.titlePosition);
     }
         
     // 内部関数 ///////////////////////////////////////////////////////////////
@@ -468,6 +476,19 @@ class drawGraph{
             }
         }
 
+        /**
+         * タイトルの作成
+         * @param {string} title
+         * @param {int} position
+         * @return {undifined}
+         */
+        CreateTitle(title,position){
+            title    = title    !== 'undefined' ? title    : this.titleText;
+            position = position !== 'undefined' ? position : this.titlePosition;
+            
+            this.ctx.textAlign = "center";
+            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title);
+        }
         /**
          * canvas要素の取得チェック
          * @returns {Boolean}
