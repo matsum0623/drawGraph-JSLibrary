@@ -50,16 +50,16 @@
         
             switch(flg){
                 case 1:
-                    // 折れ線グラフの追加
-                    MyCan.drawLineGraph(lineGraphData);
+                    // 棒グラフの追加
+                    MyCan.drawBarGraph(barGraphData,["凡例１","凡例２","凡例３"]);
                     break;
                 case 2:
-                    // 棒グラフの追加
-                    MyCan.drawBarGraph(barGraphData);
+                    // 折れ線グラフの追加
+                    MyCan.drawLineGraph(lineGraphData,["凡例１","凡例２","凡例３"]);
                     break;
                 case 3:
                     // 円グラフの追加
-                    MyCan.drawCircleGraph(circleGraphData);
+                    MyCan.drawCircleGraph(circleGraphData,["凡例１","凡例２","凡例３","凡例４","凡例５"]);
                     break;
             }
         }

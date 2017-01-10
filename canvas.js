@@ -45,66 +45,69 @@ class drawGraph{
         /** 横軸の単位記載 */
         this.unitYText = "縦軸";
         /** 軸の色 */
-        this.axisColor = "rgb(00,00,00)";
+        this.axisColor = "#000000";
         
         /** 文字色 */
-        this.textColor = "rgb(00,00,00)";
+        this.textColor = "#000000";
         /** 文字フォント */
         this.textFont = "18px 'ＭＳ Ｐゴシック'";
         
         /** 直線の幅 */
         this.lineWidth = 1;
         /** 直線の色 */
-        this.lineColor = "rgb(00,00,00)";
+        this.lineColor = "#000000";
         /** 塗りつぶしの色 */
-        this.fillColor = "rgb(00,00,00)";
+        this.fillColor = "#000000";
         
         /** 折れ線グラフ中の丸の大きさ */
         this.circleRad = 2;
         /** 折れ線グラフの丸の色 */
         this.circleColor = [
-            "rgb(255,00,00)",
-            "rgb(00,255,00)",
-            "rgb(00,00,255)",
-            "rgb(255,255,00)",
-            "rgb(255,00,255)",
-            "rgb(00,255,255)"            
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#FF00FF",
+            "F00FFFF"            
         ];
         /** 折れ線グラフの線の太さ */
         this.circleLineWidth = 1;
         /** 折れ線グラフの線の色 */
         this.circleLineColor = [
-            "rgb(255,00,00)",
-            "rgb(00,255,00)",
-            "rgb(00,00,255)",
-            "rgb(255,255,00)",
-            "rgb(255,00,255)",
-            "rgb(00,255,255)"            
+            "#F00000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#FF00FF",
+            "F00FFFF"            
         ];
         
         /** 棒グラフの幅 */
         this.barWidth = 10;
         /** 棒グラフの枠線の色 */
-        this.barLineColor = "rgb(00,00,00)";
+        this.barLineColor = "#000000";
         /** 棒グラフの塗りつぶしの色 */
         this.barFillColor = [
-            "rgb(255,00,00)",
-            "rgb(00,255,00)",
-            "rgb(00,00,255)",
-            "rgb(255,255,00)",
-            "rgb(255,00,255)",
-            "rgb(00,255,255)"            
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#FF00FF",
+            "#00FFFF"            
         ];
 
         /** 円グラフの塗りつぶしの色 */
         this.fanColor = [
-            "rgb(255,00,00)",
-            "rgb(00,255,00)",
-            "rgb(00,00,255)",
-            "rgb(255,255,00)",
-            "rgb(255,00,255)",
-            "rgb(00,255,255)"            
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#FF00FF",
+            "F00FFFF"            
         ];
+        
+        /** 凡例 */
+        this.legendText = false;
     
     }
     /**
@@ -112,7 +115,7 @@ class drawGraph{
      * @param {type} data
      * @returns {undefined}
      */
-    drawBarGraph(data){
+    drawBarGraph(data,legendText){
         if(!this.checkCanvas()){
             return;
         }
@@ -163,13 +166,13 @@ class drawGraph{
             this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
         }
 
-        this.CreateLegend(["凡例１","凡例２","凡例３"],this.barFillColor);
+        this.CreateLegend(legendText,this.barFillColor);
     }
     /**
      * 折れ線グラフを描画
      * @@param {array} data 
      */
-    drawLineGraph(data){
+    drawLineGraph(data,legendText){
         if(!this.checkCanvas() || !this.checkData(data)){
             return;
         }
@@ -222,12 +225,15 @@ class drawGraph{
             // 文字の描画
             this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
         }
+
+        // 凡例の描画
+        this.CreateLegend(legendText,this.barFillColor);
     }
     /**
      * 円グラフを描画
      * @param {array} data 
      */
-    drawCircleGraph(data){
+    drawCircleGraph(data,legendText){
         if(!this.checkCanvas() || !this.checkData(data)){
             return;
         }
@@ -249,6 +255,8 @@ class drawGraph{
             startAng = startAng + Math.PI*2*(data[i][1]/dataSum);
         }
         
+        // 凡例の描画
+        this.CreateLegend(legendText,this.barFillColor);
     }
         
     // 内部関数 ///////////////////////////////////////////////////////////////
@@ -440,11 +448,15 @@ class drawGraph{
 
         /**
          * 凡例の作成
-         * @param {type} legendText
-         * @param {type} fillColor 
+         * @param {array(string)} legendText
+         * @param {string} fillColor 
          * @returns {undefined}
          */
         CreateLegend(legendText,fillColor){
+            legendText = legendText !== 'undefined' ? legendText : this.legendText;
+            if(!legendText){
+                return;
+            }
             const legendCount = legendText.length;
             let tmpX = this.width - (legendCount * 60) - 10;
             let tmpY = this.height - 40;
