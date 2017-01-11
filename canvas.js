@@ -242,11 +242,14 @@ class drawGraph{
                 
                 if(data[i+1]){
                     this.DrawLine(xPosition, opY - yData, xPosition + xInterval, opY - (data[i+1][j] / this.unitY) * yInterval,this.lineWidth, this.circleLineColor[j-1]);
+                }else{
+                    this.DrawFillText(xPosition + 5, opY - yData + 3, legendText[j-1], 'left', 40, '#000000', "10px 'ＭＳ ゴシック'");
                 }
             }
 
             // 文字の描画
             this.DrawFillText(xPosition, yPosition + 21, data[i][0], 'center', 40);
+            
         }
 
         // 凡例の描画
@@ -518,7 +521,7 @@ class drawGraph{
             const legendCount = legendText.length;
             let tmpX = this.width - (legendCount * 60) - 10;
             let tmpY = this.height - 40;
-            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,"rgb(00,00,00)",true);
+            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,'#000000',true);
             
             for(let i=0; i<legendCount; i++){
                 this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
