@@ -38,11 +38,12 @@
             
             // 描画するデータ（円グラフ）
             const circleGraphData = [
-                ['10代',60],
+                ['10代',10],
                 ['20代',20],
                 ['30代',30],
-                ['40代',40],
-                ['50代',50]
+                ['40代',100],
+                ['50代',50],
+                ['60代',1]
             ];
         
             // キャンバスのインスタンス生成(id,width,height)
@@ -67,7 +68,7 @@
                     title = "円グラフサンプル";
                     MyCan.titleText = title;
                     // 円グラフの追加
-                    MyCan.drawCircleGraph(circleGraphData,["凡例１","凡例２","凡例３","凡例４","凡例５"]);
+                    MyCan.drawCircleGraph(circleGraphData,["凡例１","凡例２","凡例３","凡例４","凡例５","凡例６"]);
                     break;
             }
         }

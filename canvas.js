@@ -55,7 +55,9 @@ class drawGraph{
         /** 文字色 */
         this.textColor = "#000000";
         /** 文字フォント */
-        this.textFont = "18px 'ＭＳ Ｐゴシック'";
+        this.textFont = "18px 'ＭＳ ゴシック'";
+        /** 文字アライメント */
+        this.textAlign = 'left';
         
         /** 直線の幅 */
         this.lineWidth = 1;
@@ -63,6 +65,13 @@ class drawGraph{
         this.lineColor = "#000000";
         /** 塗りつぶしの色 */
         this.fillColor = "#000000";
+        /** 破線間隔 */
+        this.lineDash = {
+            no  : [0,0],
+            yes : [10,10]
+        };
+        /** 破線フラグ */
+        this.lineDashFlg = false;
         
         /** 折れ線グラフ中の丸の大きさ */
         this.circleRad = 2;
@@ -108,13 +117,20 @@ class drawGraph{
             "#0000FF",
             "#FFFF00",
             "#FF00FF",
-            "F00FFFF"            
+            "#00FFFF"            
         ];
+        /** 円グラフデータ描画位置(半径の何割の位置か) */
+        this.circleTextDrawRadRatio = 0.7;
+        /** 円グラフのデータ描画最小割合 */
+        this.circleMinData = 0.01;
         
         /** 凡例 */
         this.legendText = false;
     
     }
+    
+    // メイン関数 //////////////////////////////////////////////////////////////////
+    
     /**
      * 棒グラフを描画
      * @param {type} data
@@ -168,12 +184,13 @@ class drawGraph{
             }
             
             // 文字の描画
-            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+            this.DrawFillText(opX + (xInterval * (i+1)), yPosition + 21, data[i][0], 'center', 40);
         }
 
         this.CreateLegend(legendText,this.barFillColor);
         this.CreateTitle(this.titleText,this.titlePosition);
     }
+    
     /**
      * 折れ線グラフを描画
      * @@param {array} data 
@@ -225,11 +242,14 @@ class drawGraph{
                 
                 if(data[i+1]){
                     this.DrawLine(xPosition, opY - yData, xPosition + xInterval, opY - (data[i+1][j] / this.unitY) * yInterval,this.lineWidth, this.circleLineColor[j-1]);
+                }else{
+                    this.DrawFillText(xPosition + 5, opY - yData + 3, legendText[j-1], 'left', 40, '#000000', "10px 'ＭＳ ゴシック'");
                 }
             }
 
             // 文字の描画
-            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+            this.DrawFillText(xPosition, yPosition + 21, data[i][0], 'center', 40);
+            
         }
 
         // 凡例の描画
@@ -246,7 +266,7 @@ class drawGraph{
         }
         
         // 円グラフの中心点
-        const op  = [this.width/2,this.height/2];
+        const op  = {x : this.width/2, y : this.height/2};
         // 円グラフの半径（描画範囲の短い側の35%の長さ）
         const rad = (this.width < this.height ? this.width : this.height) * 0.35;
         
@@ -258,7 +278,22 @@ class drawGraph{
         // 円グラフ描画
         let startAng = 0;
         for(let i=0;i<data.length;i++){
-            this.DrawFillFan(op[0],op[1],rad,startAng, startAng + Math.PI*2*(data[i][1]/dataSum),this.fanColor[i]);
+            this.DrawFillFan(op['x'],op['y'],rad,startAng, startAng + Math.PI*2*(data[i][1]/dataSum),this.fanColor[i]);
+            
+            // データのグラフ内へのデータ表示(一定の角度以下の場合表示しない)
+            let textX = op['x'];
+            let textY = op['y'];
+            const textDrawRad = rad * this.circleTextDrawRadRatio;
+            let textDrawAng = startAng + Math.PI*(data[i][1]/dataSum);
+            if(data[i][1]/dataSum > this.circleMinData){
+                // 描画位置の計算
+                textX = op['x'] + Math.sin(textDrawAng) * textDrawRad;
+                textY = op['y'] - Math.cos(textDrawAng) * textDrawRad;
+                this.DrawFillBox(textX-18,textY,36,18,'#FFFFFF');
+                this.DrawFillText(textX,textY + 16,data[i][1], 'center',50);
+            }
+            
+            // 次データのスタート位置調整
             startAng = startAng + Math.PI*2*(data[i][1]/dataSum);
         }
         
@@ -276,13 +311,22 @@ class drawGraph{
          * @param {type} y2
          * @param {type} width
          * @param {type} color
+         * @param {bool} lineDashFlg
          * @returns {undefined}
          */
-        DrawLine(x1,y1,x2,y2,width,color){
+        DrawLine(x1,y1,x2,y2,width,color,lineDashFlg){
             width = typeof width !== 'undefined' ? width : this.lineWidth;
             color = typeof color !== 'undefined' ? color : this.lineColor;
+            lineDashFlg = typeof lineDashFlg !== 'undefined' ? lineDashFlg : this.lineDashFlg;
+            
+            
             this.ctx.lineWidth = width;
             this.ctx.strokeStyle = color;
+            if(lineDashFlg !== true){
+                this.ctx.setLineDash(this.lineDash['no']);
+            }else{
+                this.ctx.setLineDash(this.lineDash['yes']);
+            }
             this.ctx.beginPath();
             this.ctx.moveTo(x1,y1);
             this.ctx.lineTo(x2,y2);
@@ -386,22 +430,25 @@ class drawGraph{
         }
         
         /**
-         * 
+         * テキストを描画
          * @param {type} x
          * @param {type} y
          * @param {type} text
          * @param {type} maxLength 
          * @param {type} textColor
-         * @param {type} font 
+         * @param {type} textFont 
          * @returns {undefined}
          */
-        DrawFillText(x,y,text,maxLength,textColor,font){
+        DrawFillText(x,y,text,textAlign,maxLength,textColor,textFont){
             textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
-            font = typeof font !== 'undefined' ? font : this.font;
+            textFont = typeof textFont !== 'undefined' ? textFont : this.textFont;
+            textAlign = typeof textAlign !== 'undefined' ? textAlign : this.textAlign;
             
             this.ctx.fillStyle = textColor;
-            this.ctx.font      = font;
+            this.ctx.font      = textFont;
+            this.ctx.textAlign = textAlign;
             this.ctx.fillText(text,x,y,maxLength);
+            this.ctx.textAlign = this.textAlign;
         }
         
         /**
@@ -434,24 +481,30 @@ class drawGraph{
             // 縦軸描画
             this.DrawLine(opX,opY,opX,maxY,1,axisColor);
             // 縦軸単位線描画
-            var tmpY = opY - unitY; 
-            while(tmpY > maxY){
-                this.DrawLine(opX-3,tmpY,opX+3,tmpY,1,axisColor);
-                tmpY = tmpY - unitY;
+            var tmpY = opY - unitY;
+            for(let i=0;tmpY > maxY;i++){
+                // 基準点描画
+                this.DrawLine(opX-3, Math.round(tmpY), opX+3, Math.round(tmpY), 1, axisColor);
+                // 基準単位描画
+                this.DrawFillText(opX-4, Math.round(tmpY) + 6, this.unitY * i, 'right')
+                // 基準線描画
+                this.DrawLine(opX+4, Math.round(tmpY), this.maxX, Math.round(tmpY), 0.5, '#000000', true);
+                tmpY = opY - (unitY * (i + 1));
             }
             // 縦軸単位表記描画
-            this.DrawFillText(30,30,unitXText);
+            this.DrawFillText(30,30,unitXText, 'left');
             
             // 横軸描画
             this.DrawLine(opX,opY,maxX,opY,1,axisColor);
             // 横軸単位線描画
             var tmpX = opX + unitX; 
             while(tmpX < maxX){
+                // 基準点描画
                 this.DrawLine(tmpX,opY-3,tmpX,opY+3,1,axisColor);
                 tmpX = tmpX + unitX;
             }
-            // 縦軸単位表記描画
-            this.DrawFillText(maxX,this.height-50,unitYText);
+            // 横軸単位表記描画
+            this.DrawFillText(maxX,this.height-50,unitYText, 'left');
         }
 
         /**
@@ -468,11 +521,11 @@ class drawGraph{
             const legendCount = legendText.length;
             let tmpX = this.width - (legendCount * 60) - 10;
             let tmpY = this.height - 40;
-            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,"rgb(00,00,00)",true);
+            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,'#000000',true);
             
             for(let i=0; i<legendCount; i++){
                 this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
-                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i],50);
+                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i], 'left',50,'#000000',"10px 'ＭＳ ゴシック'");
             }
         }
 
@@ -486,9 +539,9 @@ class drawGraph{
             title    = title    !== 'undefined' ? title    : this.titleText;
             position = position !== 'undefined' ? position : this.titlePosition;
             
-            this.ctx.textAlign = "center";
-            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title);
+            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title, 'center');
         }
+
         /**
          * canvas要素の取得チェック
          * @returns {Boolean}
@@ -502,7 +555,7 @@ class drawGraph{
         }
         
         /**
-         * 
+         * グラフデータのチェック
          * @param {array} data  グラフデータ
          * @param {int} type    グラフ種別
          * @returns {Boolean}
