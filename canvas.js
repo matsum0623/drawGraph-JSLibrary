@@ -56,6 +56,8 @@ class drawGraph{
         this.textColor = "#000000";
         /** 文字フォント */
         this.textFont = "18px 'ＭＳ Ｐゴシック'";
+        /** 文字アライメント */
+        this.textAlign = 'left';
         
         /** 直線の幅 */
         this.lineWidth = 1;
@@ -108,13 +110,20 @@ class drawGraph{
             "#0000FF",
             "#FFFF00",
             "#FF00FF",
-            "F00FFFF"            
+            "#00FFFF"            
         ];
+        /** 円グラフデータ描画位置(半径の何割の位置か) */
+        this.circleTextDrawRadRatio = 0.7;
+        /** 円グラフのデータ描画最小割合 */
+        this.circleMinData = 0.01;
         
         /** 凡例 */
         this.legendText = false;
     
     }
+    
+    // メイン関数 //////////////////////////////////////////////////////////////////
+    
     /**
      * 棒グラフを描画
      * @param {type} data
@@ -168,12 +177,13 @@ class drawGraph{
             }
             
             // 文字の描画
-            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 'left', 40);
         }
 
         this.CreateLegend(legendText,this.barFillColor);
         this.CreateTitle(this.titleText,this.titlePosition);
     }
+    
     /**
      * 折れ線グラフを描画
      * @@param {array} data 
@@ -229,7 +239,7 @@ class drawGraph{
             }
 
             // 文字の描画
-            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 40);
+            this.DrawFillText(xPosition, yPosition + 15, data[i][0], 'left', 40);
         }
 
         // 凡例の描画
@@ -246,7 +256,7 @@ class drawGraph{
         }
         
         // 円グラフの中心点
-        const op  = [this.width/2,this.height/2];
+        const op  = {x : this.width/2, y : this.height/2};
         // 円グラフの半径（描画範囲の短い側の35%の長さ）
         const rad = (this.width < this.height ? this.width : this.height) * 0.35;
         
@@ -258,7 +268,22 @@ class drawGraph{
         // 円グラフ描画
         let startAng = 0;
         for(let i=0;i<data.length;i++){
-            this.DrawFillFan(op[0],op[1],rad,startAng, startAng + Math.PI*2*(data[i][1]/dataSum),this.fanColor[i]);
+            this.DrawFillFan(op['x'],op['y'],rad,startAng, startAng + Math.PI*2*(data[i][1]/dataSum),this.fanColor[i]);
+            
+            // データのグラフ内への表示(一定の角度以下の場合表示しない)
+            let textX = op['x'];
+            let textY = op['y'];
+            const textDrawRad = rad * this.circleTextDrawRadRatio;
+            let textDrawAng = startAng + Math.PI*(data[i][1]/dataSum);
+            if(data[i][1]/dataSum > this.circleMinData){
+                // 描画位置の計算
+                textX = op['x'] + Math.sin(textDrawAng) * textDrawRad;
+                textY = op['y'] - Math.cos(textDrawAng) * textDrawRad;
+                this.DrawFillBox(textX-15,textY,30,12,'#FFFFFF');
+                this.DrawFillText(textX,textY + 10,data[i][1], 'center',50);
+            }
+            
+            // 次データのスタート位置調整
             startAng = startAng + Math.PI*2*(data[i][1]/dataSum);
         }
         
@@ -395,13 +420,16 @@ class drawGraph{
          * @param {type} font 
          * @returns {undefined}
          */
-        DrawFillText(x,y,text,maxLength,textColor,font){
+        DrawFillText(x,y,text,textAlign,maxLength,textColor,font){
             textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
             font = typeof font !== 'undefined' ? font : this.font;
+            textAlign = typeof textAlign !== 'undefined' ? textAlign : this.textAlign;
             
             this.ctx.fillStyle = textColor;
             this.ctx.font      = font;
+            this.ctx.textAlign = textAlign;
             this.ctx.fillText(text,x,y,maxLength);
+            this.ctx.textAlign = this.textAlign;
         }
         
         /**
@@ -440,7 +468,7 @@ class drawGraph{
                 tmpY = tmpY - unitY;
             }
             // 縦軸単位表記描画
-            this.DrawFillText(30,30,unitXText);
+            this.DrawFillText(30,30,unitXText, 'left');
             
             // 横軸描画
             this.DrawLine(opX,opY,maxX,opY,1,axisColor);
@@ -451,7 +479,7 @@ class drawGraph{
                 tmpX = tmpX + unitX;
             }
             // 縦軸単位表記描画
-            this.DrawFillText(maxX,this.height-50,unitYText);
+            this.DrawFillText(maxX,this.height-50,unitYText, 'left');
         }
 
         /**
@@ -472,7 +500,7 @@ class drawGraph{
             
             for(let i=0; i<legendCount; i++){
                 this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
-                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i],50);
+                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i], 'left',50);
             }
         }
 
@@ -486,9 +514,9 @@ class drawGraph{
             title    = title    !== 'undefined' ? title    : this.titleText;
             position = position !== 'undefined' ? position : this.titlePosition;
             
-            this.ctx.textAlign = "center";
-            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title);
+            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title, 'center');
         }
+
         /**
          * canvas要素の取得チェック
          * @returns {Boolean}
@@ -502,7 +530,7 @@ class drawGraph{
         }
         
         /**
-         * 
+         * グラフデータのチェック
          * @param {array} data  グラフデータ
          * @param {int} type    グラフ種別
          * @returns {Boolean}
