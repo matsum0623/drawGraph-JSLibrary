@@ -135,8 +135,9 @@ class DrawGraph{
     
     /**
      * 棒グラフを描画
-     * @param {type} data
-     * @returns {undefined}
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
     DrawBarGraph(data,legendText){
         if(!this.CheckCanvas()){
@@ -195,7 +196,9 @@ class DrawGraph{
     
     /**
      * 折れ線グラフを描画
-     * @@param {array} data 
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
     DrawLineGraph(data,legendText){
         if(!this.CheckCanvas() || !this.CheckData(data)){
@@ -258,9 +261,12 @@ class DrawGraph{
         this.CreateLegend(legendText,this.barFillColor);
         this.CreateTitle(this.titleText,this.titlePosition);
     }
+
     /**
      * 円グラフを描画
-     * @param {array} data 
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
     DrawCircleGraph(data,legendText){
         if(!this.CheckCanvas() || !this.CheckData(data)){
@@ -307,23 +313,23 @@ class DrawGraph{
     // 内部関数 ///////////////////////////////////////////////////////////////
     /**
      * 直線を追加
-     * @param {type} x1
-     * @param {type} y1
-     * @param {type} x2
-     * @param {type} y2
-     * @param {type} width
-     * @param {type} color
-     * @param {bool} lineDashFlg
-     * @returns {undefined}
+     * @param {int} x1  開始点X
+     * @param {int} y1  開始点Y
+     * @param {int} x2  終了点X
+     * @param {int} y2  終了点Y
+     * @param {int} lineWidth   線の太さ   
+     * @param {String} lineColor    線の色
+     * @param {bool} lineDashFlg    点線フラグ
+     * @returns {void}
      */
-    DrawLine(x1,y1,x2,y2,width,color,lineDashFlg){
-        width = typeof width !== 'undefined' ? width : this.lineWidth;
-        color = typeof color !== 'undefined' ? color : this.lineColor;
+    DrawLine(x1,y1,x2,y2,lineWidth,lineColor,lineDashFlg){
+        lineWidth   = typeof lineWidth   !== 'undefined' ? lineWidth   : this.lineWidth;
+        lineColor   = typeof lineColor   !== 'undefined' ? lineColor   : this.lineColor;
         lineDashFlg = typeof lineDashFlg !== 'undefined' ? lineDashFlg : this.lineDashFlg;
         
         
-        this.ctx.lineWidth = width;
-        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth   = lineWidth;
+        this.ctx.strokeStyle = lineColor;
         if(lineDashFlg !== true){
             this.ctx.setLineDash(this.lineDash['no']);
         }else{
@@ -338,12 +344,12 @@ class DrawGraph{
 
     /**
      * 塗りつぶした正円を追加
-     * @param {int} x         X座標
-     * @param {int} y         Y座標
-     * @param {int} rad       半径
+     * @param {int} x         中心のX座標
+     * @param {int} y         中心のY座標
+     * @param {int} rad       円の半径
      * @param {String} fillColor  塗りつぶしの色
      * @param {boolean} flg   基準フラグ（true：左上、false：左下）
-     * @returns void        
+     * @returns {void}        
      */
     DrawFillCircle(x,y,rad,fillColor,flg){
         fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
@@ -352,7 +358,7 @@ class DrawGraph{
             y = this.height - y;
         }
         this.ctx.beginPath();
-        this.ctx.arc(x,y,rad,0,2*Math.PI,true);
+        this.ctx.arc(x,y,rad,0,Math.PI*2,true);
         this.ctx.fillStyle   = fillColor;
         this.ctx.strokeStyle = fillColor;
         this.ctx.stroke();
@@ -362,12 +368,12 @@ class DrawGraph{
     /**
      * 塗りつぶした扇形を作成
      * 基準点は真上に修正される
-     * @param {type} x
-     * @param {type} y
-     * @param {type} rad
-     * @param {type} startAng
-     * @param {type} endAng
-     * @param {type} fillColor
+     * @param {double} x
+     * @param {double} y
+     * @param {double} rad
+     * @param {float} startAng
+     * @param {float} endAng
+     * @param {String} fillColor
      * @returns {undefined}
      */
     DrawFillFan(x,y,rad,startAng,endAng,fillColor){
@@ -385,14 +391,14 @@ class DrawGraph{
     
     /**
      * 塗りつぶした四角形を描画する
-     * @param {type} x      始点のX座標    
-     * @param {type} y      始点のY座標
-     * @param {type} width  四角形の幅
-     * @param {type} height 四角形の高さ
-     * @param {type} fillColor description
-     * @param {type} lineColor description
-     * @param {type} flg    基準フラグ（true：左上、false：左下）
-     * @returns {undefined}
+     * @param {double} x      始点のX座標    
+     * @param {double} y      始点のY座標
+     * @param {double} width  四角形の幅
+     * @param {double} height 四角形の高さ
+     * @param {String} fillColor 塗りつぶしの色
+     * @param {String} lineColor ラインの色
+     * @param {bool} flg    基準フラグ（true：左上、false：左下）
+     * @returns {void}
      */
     DrawFillBox(x,y,width,height,fillColor,lineColor,flg){
         fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
@@ -411,13 +417,13 @@ class DrawGraph{
     
     /**
      * 四角形を描画
-     * @param {type} x
-     * @param {type} y
-     * @param {type} width
-     * @param {type} height
-     * @param {type} lineColor
-     * @param {type} flg
-     * @returns {undefined}
+     * @param {double} x    基準点のX座標
+     * @param {double} y    基準点のY座標
+     * @param {double} width    図形の横幅
+     * @param {double} height   図形の縦幅
+     * @param {String} lineColor    ラインの色
+     * @param {bool} flg    基準フラグ（true：左上、false：左下）
+     * @returns {void}
      */
     DrawBox(x,y,width,height,lineColor,flg){
         lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
@@ -433,13 +439,13 @@ class DrawGraph{
     
     /**
      * テキストを描画
-     * @param {type} x
-     * @param {type} y
-     * @param {type} text
-     * @param {type} maxLength 
-     * @param {type} textColor
-     * @param {type} textFont 
-     * @returns {undefined}
+     * @param {double} x    基準点のX座標
+     * @param {double} y    基準点のY座標
+     * @param {String} text 描画するテキスト
+     * @param {double} maxLength    最大幅
+     * @param {String} textColor    文字色
+     * @param {String} textFont     文字フォント
+     * @returns {void}
      */
     DrawFillText(x,y,text,textAlign,maxLength,textColor,textFont){
         textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
@@ -456,15 +462,15 @@ class DrawGraph{
     /**
      * 縦軸/横軸を描画
      * @param {text} axisColor 軸の色
-     * @param {int} opX 基準点のX位置
-     * @param {int} opY 基準点のY位置
-     * @param {int} maxX X軸の最大位置
-     * @param {int} maxY Y軸の最大位置
-     * @param {int} unitX X軸の単位間隔
-     * @param {int} unitY Y軸の単位間隔
-     * @param {text} unitXText X軸の単位表記
-     * @param {text} unitYText Y軸の単位表記
-     * @returns void
+     * @param {double} opX 基準点のX位置
+     * @param {double} opY 基準点のY位置
+     * @param {double} maxX X軸の最大位置
+     * @param {double} maxY Y軸の最大位置
+     * @param {double} unitX X軸の単位間隔
+     * @param {double} unitY Y軸の単位間隔
+     * @param {String} unitXText X軸の単位表記
+     * @param {String} unitYText Y軸の単位表記
+     * @returns {void}
      */
     CreateAxis(axisColor,opX,opY,maxX,maxY,unitX,unitY,unitXText,unitYText){
         // 描画色の設定
@@ -511,9 +517,9 @@ class DrawGraph{
 
     /**
      * 凡例の作成
-     * @param {array(string)} legendText
-     * @param {string} fillColor 
-     * @returns {undefined}
+     * @param {array[string...]} legendText 凡例データ
+     * @param {array[string...]} fillColor    凡例用色データ
+     * @returns {void}
      */
     CreateLegend(legendText,fillColor){
         legendText = legendText !== 'undefined' ? legendText : this.legendText;
@@ -533,15 +539,15 @@ class DrawGraph{
 
     /**
      * タイトルの作成
-     * @param {string} title
-     * @param {int} position
-     * @return {undifined}
+     * @param {String} title    タイトルテキスト
+     * @param {int} titlePosition   表示位置フラグ
+     * @return {void}
      */
-    CreateTitle(title,position){
+    CreateTitle(title,titlePosition){
         title    = title    !== 'undefined' ? title    : this.titleText;
-        position = position !== 'undefined' ? position : this.titlePosition;
+        titlePosition = titlePosition !== 'undefined' ? titlePosition : this.titlePosition;
         
-        this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title, 'center');
+        this.DrawFillText(this.width/2,titlePosition === 0 ? 20 : this.height -20,title, 'center');
     }
 
     /**
