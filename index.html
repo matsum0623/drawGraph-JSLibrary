@@ -47,7 +47,7 @@
             ];
         
             // キャンバスのインスタンス生成(id,width,height)
-            var MyCan = new drawGraph("MyCanvas",800,500);
+            var MyCan = new DrawGraph("MyCanvas",800,500);
         
             let title = "";
         
@@ -56,19 +56,19 @@
                     title = "棒グラフサンプル";
                     MyCan.titleText = title;
                     // 棒グラフの追加
-                    MyCan.drawBarGraph(barGraphData,["凡例１","凡例２","凡例３"]);
+                    MyCan.DrawBarGraph(barGraphData,["凡例１","凡例２","凡例３"]);
                     break;
                 case 2:
                     title = "折れ線グラフサンプル";
                     MyCan.titleText = title;
                     // 折れ線グラフの追加
-                    MyCan.drawLineGraph(lineGraphData,["凡例１","凡例２","凡例３"]);
+                    MyCan.DrawLineGraph(lineGraphData,["凡例１","凡例２","凡例３"]);
                     break;
                 case 3:
                     title = "円グラフサンプル";
                     MyCan.titleText = title;
                     // 円グラフの追加
-                    MyCan.drawCircleGraph(circleGraphData,["凡例１","凡例２","凡例３","凡例４","凡例５","凡例６"]);
+                    MyCan.DrawCircleGraph(circleGraphData,["凡例１","凡例２","凡例３","凡例４","凡例５","凡例６"]);
                     break;
             }
         }
