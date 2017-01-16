@@ -75,10 +75,8 @@ class DrawGraph{
         /** 破線フラグ */
         this.lineDashFlg = false;
         
-        /** 折れ線グラフ中の丸の大きさ */
-        this.circleRad = 2;
-        /** 折れ線グラフの丸の色 */
-        this.circleColor = [
+        /** 基準の色セット */
+        this.standardColorSet = [
             "#FF0000",
             "#00FF00",
             "#0000FF",
@@ -86,41 +84,25 @@ class DrawGraph{
             "#FF00FF",
             "F00FFFF"            
         ];
+
+        /** 折れ線グラフ中の丸の大きさ */
+        this.circleRad = 2;
+        /** 折れ線グラフの丸の色 */
+        this.circleColor = this.standardColorSet;
         /** 折れ線グラフの線の太さ */
         this.circleLineWidth = 1;
         /** 折れ線グラフの線の色 */
-        this.circleLineColor = [
-            "#F00000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "F00FFFF"            
-        ];
+        this.circleLineColor = this.standardColorSet;
         
         /** 棒グラフの幅 */
         this.barWidth = 10;
         /** 棒グラフの枠線の色 */
         this.barLineColor = "#000000";
         /** 棒グラフの塗りつぶしの色 */
-        this.barFillColor = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "#00FFFF"            
-        ];
+        this.barFillColor = this.standardColorSet;
 
         /** 円グラフの塗りつぶしの色 */
-        this.fanColor = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "#00FFFF"            
-        ];
+        this.fanColor = this.standardColorSet;
         /** 円グラフデータ描画位置(半径の何割の位置か) */
         this.circleTextDrawRadRatio = 0.7;
         /** 円グラフのデータ描画最小割合 */
