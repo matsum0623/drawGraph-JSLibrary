@@ -3,16 +3,18 @@
  * ES2015の機能を使用しているため、IEでは動作しない=>IE時の考慮は未実装
  * 現在は２Dのみの対応
  */
-class drawGraph{
+class DrawGraph{
+
     /**
-     * 
-     * @param {type} canvas
-     * @param {type} width
-     * @param {type} height
-     * @returns {drawGraph}
+     * コンストラクタ
+     * @param {text} canvas canvasのID
+     * @param {int} width   canvasの横幅
+     * @param {int} height  canvasの縦幅
+     * @returns {void}
      */
     constructor(canvas,width,height){
-        this.width = typeof width !== 'undefined' ? width : 800;
+        /** canvasの縦横幅の設定 */
+        this.width  = typeof width  !== 'undefined' ? width  : 800;
         this.height = typeof height !== 'undefined' ? height : 500;
         
         /** キャンバスの取得(canvasサイズのリサイズ) */
@@ -36,10 +38,10 @@ class drawGraph{
         this.titlePosition = 0;
         
         /** 軸描画用基準点設定（左下を基準点とする）*/
-        this.opX  = 50;                 // 基準点X
-        this.opY  = this.height - 70;   // 基準点Y
-        this.maxX = this.width  - 50;   // 最大X
-        this.maxY = 50;                 // 最大Y
+        this.opX  = 50;                     // 基準点X
+        this.opY  = this.height - 70;       // 基準点Y
+        this.maxX = this.width  - this.opX; // 最大X
+        this.maxY = 50;                     // 最大Y
         
         /** 縦軸の単位 */
         this.unitY = 50;
@@ -73,10 +75,8 @@ class drawGraph{
         /** 破線フラグ */
         this.lineDashFlg = false;
         
-        /** 折れ線グラフ中の丸の大きさ */
-        this.circleRad = 2;
-        /** 折れ線グラフの丸の色 */
-        this.circleColor = [
+        /** 基準の色セット */
+        this.standardColorSet = [
             "#FF0000",
             "#00FF00",
             "#0000FF",
@@ -84,41 +84,25 @@ class drawGraph{
             "#FF00FF",
             "F00FFFF"            
         ];
+
+        /** 折れ線グラフ中の丸の大きさ */
+        this.circleRad = 2;
+        /** 折れ線グラフの丸の色 */
+        this.circleColor = this.standardColorSet;
         /** 折れ線グラフの線の太さ */
         this.circleLineWidth = 1;
         /** 折れ線グラフの線の色 */
-        this.circleLineColor = [
-            "#F00000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "F00FFFF"            
-        ];
+        this.circleLineColor = this.standardColorSet;
         
         /** 棒グラフの幅 */
         this.barWidth = 10;
         /** 棒グラフの枠線の色 */
         this.barLineColor = "#000000";
         /** 棒グラフの塗りつぶしの色 */
-        this.barFillColor = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "#00FFFF"            
-        ];
+        this.barFillColor = this.standardColorSet;
 
         /** 円グラフの塗りつぶしの色 */
-        this.fanColor = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "#00FFFF"            
-        ];
+        this.fanColor = this.standardColorSet;
         /** 円グラフデータ描画位置(半径の何割の位置か) */
         this.circleTextDrawRadRatio = 0.7;
         /** 円グラフのデータ描画最小割合 */
@@ -133,58 +117,39 @@ class drawGraph{
     
     /**
      * 棒グラフを描画
-     * @param {type} data
-     * @returns {undefined}
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
-    drawBarGraph(data,legendText){
-        if(!this.checkCanvas()){
+    DrawBarGraph(data,legendText){
+        if(!this.CheckCanvas()){
             return;
         }
         // 棒グラフの幅
         let barWidth = this.barWidth;
-        // 基準点X
-        let opX = this.opX;
-        // 基準点Y
-        let opY = this.opY;
         
-        // グラフ間隔の計算(X軸)
-        const xCount = data.length;
-        const xInterval = (this.maxX - opX) / (xCount + 1);
-        
-        // 1グループのデータ数の取得
-        const drawDataCount = data[0].length - 1;
-        
-        // Y軸最大値計算用
-        let maxYdata = 0;
-        for(let i=0;i<data.length;i++){
-            for(let j=1;j<drawDataCount+1;j++){
-                // Y軸最大値の再計算
-                if(maxYdata < data[i][j]){
-                    maxYdata = data[i][j];
-                }
-            }
-        }
-        // Y軸の計算
-        const yCount = Math.floor(maxYdata / this.unitY);
-        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1);
-        
-        // 軸の生成
-        this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
+        // データの処理
+        data = this.dataFunction(data);
 
         // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす）
         for(let i=0;i<data.length;i++){
-            let xPosition = opX + (xInterval * (i+1)) - (drawDataCount * this.barWidth)/2;
-            let yPosition = opY - 1;
+            let xPosition = this.opX + (data.xInterval * (i+1)) - (data.drawDataCount * this.barWidth)/2;
+            let yPosition;
 
             for(let j=1;j<data[i].length;j++){
                 // データを基準に合わせて処理
-                let yData = (data[i][j] / this.unitY) * yInterval;
+                let yData = (data[i][j] / this.unitY) * data.yInterval;
+                if(data[i][j] > 0){
+                    yPosition = data.xLineHeight - 0.5;
+                }else{
+                    yPosition = data.xLineHeight + 0.5;
+                }
 
                 this.DrawFillBox(xPosition + (this.barWidth * (j-1)), yPosition, barWidth, yData, this.barFillColor[j-1], this.barLineColor, false);
             }
             
             // 文字の描画
-            this.DrawFillText(opX + (xInterval * (i+1)), yPosition + 21, data[i][0], 'center', 40);
+            this.DrawFillText(this.opX + (data.xInterval * (i+1)), yPosition + 21, data[i][0], 'center', 40);
         }
 
         this.CreateLegend(legendText,this.barFillColor);
@@ -193,57 +158,34 @@ class drawGraph{
     
     /**
      * 折れ線グラフを描画
-     * @@param {array} data 
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
-    drawLineGraph(data,legendText){
-        if(!this.checkCanvas() || !this.checkData(data)){
+    DrawLineGraph(data,legendText){
+        if(!this.CheckCanvas() || !this.CheckData(data)){
             return;
         }
-        // 基準点X
-        let opX = this.opX;
-        // 基準点Y
-        let opY = this.opY;
-        
-        // グラフ間隔の計算(X軸)
-        const xCount = data.length;
-        const xInterval = (this.maxX - opX) / (xCount + 1);
-        
-        // 1グループのデータ数の取得
-        const drawDataCount = data[0].length - 1;
-        
-        // Y軸最大値計算用
-        let maxYdata = 0;
-        for(let i=0;i<data.length;i++){
-            for(let j=1;j<drawDataCount+1;j++){
-                // Y軸最大値の再計算
-                if(maxYdata < data[i][j]){
-                    maxYdata = data[i][j];
-                }
-            }
-        }
-        // Y軸の計算
-        const yCount = Math.floor(maxYdata / this.unitY);
-        const yInterval = Math.abs(this.maxY - opY) / (yCount + 1);
-        
-        // 軸の生成
-        this.CreateAxis(this.axisColor,opX,opY,this.maxX,this.maxY,xInterval,yInterval,this.unitXText,this.unitYText);
+
+        // データの処理
+        data = this.dataFunction(data);
 
         // 黒丸の大きさ
         let circleRad = this.circleRad;
             
         // グラフの描画
         for(let i=0;i<data.length;i++){
-            let xPosition = opX + (xInterval * (i+1));
-            let yPosition = opY - 1;
+            let xPosition = this.opX + (data.xInterval * (i+1));
+            let yPosition = data.xLineHeight;
 
             for(let j=1;j<data[i].length;j++){
-                let yData = (data[i][j] / this.unitY) * yInterval;
-                this.DrawFillCircle(xPosition, opY - yData, circleRad, this.circleColor[j-1]);
+                let yData = (data[i][j] / this.unitY) * data.yInterval;
+                this.DrawFillCircle(xPosition, yPosition - yData, circleRad, this.circleColor[j-1]);
                 
                 if(data[i+1]){
-                    this.DrawLine(xPosition, opY - yData, xPosition + xInterval, opY - (data[i+1][j] / this.unitY) * yInterval,this.lineWidth, this.circleLineColor[j-1]);
+                    this.DrawLine(xPosition, yPosition - yData, xPosition + data.xInterval, yPosition - (data[i+1][j] / this.unitY) * data.yInterval,this.lineWidth, this.circleLineColor[j-1]);
                 }else{
-                    this.DrawFillText(xPosition + 5, opY - yData + 3, legendText[j-1], 'left', 40, '#000000', "10px 'ＭＳ ゴシック'");
+                    this.DrawFillText(xPosition + 5, yPosition - yData + 3, legendText[j-1], 'left', 40, '#000000', "10px 'ＭＳ ゴシック'");
                 }
             }
 
@@ -256,12 +198,15 @@ class drawGraph{
         this.CreateLegend(legendText,this.barFillColor);
         this.CreateTitle(this.titleText,this.titlePosition);
     }
+
     /**
      * 円グラフを描画
-     * @param {array} data 
+     * @param {arrsy[text,int...]} data グラフデータ
+     * @param {arrasy[text...]} legendText  凡例データ
+     * @returns {void}
      */
-    drawCircleGraph(data,legendText){
-        if(!this.checkCanvas() || !this.checkData(data)){
+    DrawCircleGraph(data,legendText){
+        if(!this.CheckCanvas() || !this.CheckData(data)){
             return;
         }
         
@@ -303,275 +248,380 @@ class drawGraph{
     }
         
     // 内部関数 ///////////////////////////////////////////////////////////////
-        /**
-         * 直線を追加
-         * @param {type} x1
-         * @param {type} y1
-         * @param {type} x2
-         * @param {type} y2
-         * @param {type} width
-         * @param {type} color
-         * @param {bool} lineDashFlg
-         * @returns {undefined}
-         */
-        DrawLine(x1,y1,x2,y2,width,color,lineDashFlg){
-            width = typeof width !== 'undefined' ? width : this.lineWidth;
-            color = typeof color !== 'undefined' ? color : this.lineColor;
-            lineDashFlg = typeof lineDashFlg !== 'undefined' ? lineDashFlg : this.lineDashFlg;
-            
-            
-            this.ctx.lineWidth = width;
-            this.ctx.strokeStyle = color;
-            if(lineDashFlg !== true){
-                this.ctx.setLineDash(this.lineDash['no']);
-            }else{
-                this.ctx.setLineDash(this.lineDash['yes']);
-            }
-            this.ctx.beginPath();
-            this.ctx.moveTo(x1,y1);
-            this.ctx.lineTo(x2,y2);
-            this.ctx.closePath();
-            this.ctx.stroke();
+    /**
+     * 直線を追加
+     * @param {int} x1  開始点X
+     * @param {int} y1  開始点Y
+     * @param {int} x2  終了点X
+     * @param {int} y2  終了点Y
+     * @param {int} lineWidth   線の太さ   
+     * @param {String} lineColor    線の色
+     * @param {bool} lineDashFlg    点線フラグ
+     * @returns {void}
+     */
+    DrawLine(x1,y1,x2,y2,lineWidth,lineColor,lineDashFlg){
+        lineWidth   = typeof lineWidth   !== 'undefined' ? lineWidth   : this.lineWidth;
+        lineColor   = typeof lineColor   !== 'undefined' ? lineColor   : this.lineColor;
+        lineDashFlg = typeof lineDashFlg !== 'undefined' ? lineDashFlg : this.lineDashFlg;
+        
+        
+        this.ctx.lineWidth   = lineWidth;
+        this.ctx.strokeStyle = lineColor;
+        if(lineDashFlg !== true){
+            this.ctx.setLineDash(this.lineDash['no']);
+        }else{
+            this.ctx.setLineDash(this.lineDash['yes']);
         }
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1,y1);
+        this.ctx.lineTo(x2,y2);
+        this.ctx.closePath();
+        this.ctx.stroke();
 
-        /**
-         * 塗りつぶした正円を追加
-         * @param {int} x         X座標
-         * @param {int} y         Y座標
-         * @param {int} rad       半径
-         * @param {String} fillColor  塗りつぶしの色
-         * @param {boolean} flg   基準フラグ（true：左上、false：左下）
-         * @returns void        
-         */
-        DrawFillCircle(x,y,rad,fillColor,flg){
-            fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
-            flg = typeof flg !== 'undefined' ? flg : true;
-            if(! flg){
-                y = this.height - y;
-            }
-            this.ctx.beginPath();
-            this.ctx.arc(x,y,rad,0,2*Math.PI,true);
-            this.ctx.fillStyle   = fillColor;
-            this.ctx.strokeStyle = fillColor;
-            this.ctx.stroke();
-            this.ctx.fill();
+        this.resetDrawConf();
+    }
+
+    /**
+     * 塗りつぶした正円を追加
+     * @param {int} x         中心のX座標
+     * @param {int} y         中心のY座標
+     * @param {int} rad       円の半径
+     * @param {String} fillColor  塗りつぶしの色
+     * @param {boolean} flg   基準フラグ（true：左上、false：左下）
+     * @returns {void}        
+     */
+    DrawFillCircle(x,y,rad,fillColor,flg){
+        fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
+        flg = typeof flg !== 'undefined' ? flg : true;
+        if(! flg){
+            y = this.height - y;
         }
+        this.ctx.beginPath();
+        this.ctx.arc(x,y,rad,0,Math.PI*2,true);
+        this.ctx.fillStyle   = fillColor;
+        this.ctx.strokeStyle = fillColor;
+        this.ctx.stroke();
+        this.ctx.fill();
         
-        /**
-         * 塗りつぶした扇形を作成
-         * 基準点は真上に修正される
-         * @param {type} x
-         * @param {type} y
-         * @param {type} rad
-         * @param {type} startAng
-         * @param {type} endAng
-         * @param {type} fillColor
-         * @returns {undefined}
-         */
-        DrawFillFan(x,y,rad,startAng,endAng,fillColor){
-            fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
-            
-            startAng = startAng - Math.PI/2;
-            endAng   = endAng   - Math.PI/2;
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(x,y);
-            this.ctx.arc(x, y, rad, startAng, endAng, false);
-            this.ctx.fillStyle = fillColor;
-            this.ctx.fill();
+        this.resetDrawConf();
+    }
+    
+    /**
+     * 塗りつぶした扇形を作成
+     * 基準点は真上に修正される
+     * @param {double} x
+     * @param {double} y
+     * @param {double} rad
+     * @param {float} startAng
+     * @param {float} endAng
+     * @param {String} fillColor
+     * @returns {undefined}
+     */
+    DrawFillFan(x,y,rad,startAng,endAng,fillColor){
+        fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
+        
+        startAng = startAng - Math.PI/2;
+        endAng   = endAng   - Math.PI/2;
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(x,y);
+        this.ctx.arc(x, y, rad, startAng, endAng, false);
+        this.ctx.fillStyle = fillColor;
+        this.ctx.fill();
+
+        this.resetDrawConf();
+    }
+    
+    /**
+     * 塗りつぶした四角形を描画する
+     * @param {double} x      始点のX座標    
+     * @param {double} y      始点のY座標
+     * @param {double} width  四角形の幅
+     * @param {double} height 四角形の高さ
+     * @param {String} fillColor 塗りつぶしの色
+     * @param {String} lineColor ラインの色
+     * @param {bool} flg    基準フラグ（true：左上、false：左下）
+     * @returns {void}
+     */
+    DrawFillBox(x,y,width,height,fillColor,lineColor,flg){
+        fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
+        lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
+        flg = typeof flg !== 'undefined' ? flg : true;
+        if(! flg){
+            height = height * (-1);
         }
+        this.ctx.strokeStyle = lineColor;
+        this.ctx.fillStyle = fillColor;
+        this.ctx.beginPath();
+        this.ctx.fillRect(x,y,width,height);
+        this.ctx.stroke();
+        this.ctx.fill();  
         
-        /**
-         * 塗りつぶした四角形を描画する
-         * @param {type} x      始点のX座標    
-         * @param {type} y      始点のY座標
-         * @param {type} width  四角形の幅
-         * @param {type} height 四角形の高さ
-         * @param {type} fillColor description
-         * @param {type} lineColor description
-         * @param {type} flg    基準フラグ（true：左上、false：左下）
-         * @returns {undefined}
-         */
-        DrawFillBox(x,y,width,height,fillColor,lineColor,flg){
-            fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
-            lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
-            flg = typeof flg !== 'undefined' ? flg : true;
-            if(! flg){
-                height = height * (-1);
-            }
-            this.ctx.strokeStyle = lineColor;
-            this.ctx.fillStyle = fillColor;
-            this.ctx.beginPath();
-            this.ctx.fillRect(x,y,width,height);
-            this.ctx.stroke();
-            this.ctx.fill();            
+        this.resetDrawConf();
+    }
+    
+    /**
+     * 四角形を描画
+     * @param {double} x    基準点のX座標
+     * @param {double} y    基準点のY座標
+     * @param {double} width    図形の横幅
+     * @param {double} height   図形の縦幅
+     * @param {String} lineColor    ラインの色
+     * @param {bool} flg    基準フラグ（true：左上、false：左下）
+     * @returns {void}
+     */
+    DrawBox(x,y,width,height,lineColor,flg){
+        lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
+        flg = typeof flg !== 'undefined' ? flg : true;
+        if(! flg){
+            height = height * (-1);
         }
+        this.ctx.strokeStyle = lineColor;
+        this.ctx.beginPath();
+        this.ctx.strokeRect(x,y,width,height);
+        this.ctx.stroke();
         
-        /**
-         * 四角形を描画
-         * @param {type} x
-         * @param {type} y
-         * @param {type} width
-         * @param {type} height
-         * @param {type} lineColor
-         * @param {type} flg
-         * @returns {undefined}
-         */
-        DrawBox(x,y,width,height,lineColor,flg){
-            lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
-            flg = typeof flg !== 'undefined' ? flg : true;
-            if(! flg){
-                height = height * (-1);
-            }
-            this.ctx.strokeStyle = lineColor;
-            this.ctx.beginPath();
-            this.ctx.strokeRect(x,y,width,height);
-            this.ctx.stroke();
-        }
+        this.resetDrawConf();
+    }
+    
+    /**
+     * テキストを描画
+     * @param {double} x    基準点のX座標
+     * @param {double} y    基準点のY座標
+     * @param {String} text 描画するテキスト
+     * @param {double} maxLength    最大幅
+     * @param {String} textColor    文字色
+     * @param {String} textFont     文字フォント
+     * @returns {void}
+     */
+    DrawFillText(x,y,text,textAlign,maxLength,textColor,textFont){
+        textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
+        textFont = typeof textFont !== 'undefined' ? textFont : this.textFont;
+        textAlign = typeof textAlign !== 'undefined' ? textAlign : this.textAlign;
         
-        /**
-         * テキストを描画
-         * @param {type} x
-         * @param {type} y
-         * @param {type} text
-         * @param {type} maxLength 
-         * @param {type} textColor
-         * @param {type} textFont 
-         * @returns {undefined}
-         */
-        DrawFillText(x,y,text,textAlign,maxLength,textColor,textFont){
-            textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
-            textFont = typeof textFont !== 'undefined' ? textFont : this.textFont;
-            textAlign = typeof textAlign !== 'undefined' ? textAlign : this.textAlign;
-            
-            this.ctx.fillStyle = textColor;
-            this.ctx.font      = textFont;
-            this.ctx.textAlign = textAlign;
-            this.ctx.fillText(text,x,y,maxLength);
-            this.ctx.textAlign = this.textAlign;
-        }
+        this.ctx.fillStyle = textColor;
+        this.ctx.font      = textFont;
+        this.ctx.textAlign = textAlign;
+        this.ctx.fillText(text,x,y,maxLength);
+
+        this.resetDrawConf();
+    }
+    
+    /**
+     * 縦軸/横軸を描画
+     * @param {text} axisColor 軸の色
+     * @param {double} opX 基準点のX位置
+     * @param {double} opY 基準点のY位置
+     * @param {double} maxX X軸の最大位置
+     * @param {double} maxY Y軸の最大位置
+     * @param {double} unitX X軸の単位間隔
+     * @param {double} unitY Y軸の単位間隔
+     * @param {array(double)} yCount Y軸の単位個数[プラス方向 , マイナス方向]
+     * @param {String} unitXText X軸の単位表記
+     * @param {String} unitYText Y軸の単位表記
+     * @returns {void}
+     */
+    CreateAxis(axisColor,opX,opY,maxX,maxY,unitX,unitY,yCount,unitXText,unitYText){
+        // 描画色の設定
+        axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axisColor;
         
-        /**
-         * 縦軸/横軸を描画
-         * @param {text} axisColor 軸の色
-         * @param {int} opX 基準点のX位置
-         * @param {int} opY 基準点のY位置
-         * @param {int} maxX X軸の最大位置
-         * @param {int} maxY Y軸の最大位置
-         * @param {int} unitX X軸の単位間隔
-         * @param {int} unitY Y軸の単位間隔
-         * @param {text} unitXText X軸の単位表記
-         * @param {text} unitYText Y軸の単位表記
-         * @returns void
-         */
-        CreateAxis(axisColor,opX,opY,maxX,maxY,unitX,unitY,unitXText,unitYText){
-            // 描画色の設定
-            axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axisColor;
-            
-            opX = typeof opX !== 'undefined' ? opX : this.opX;
-            opY = typeof opY !== 'undefined' ? opY : this.opY;
-            maxX = typeof maxX !== 'undefined' ? maxX : this.maxX;
-            maxY = typeof maxY !== 'undefined' ? maxY : this.maxY;
-            
-            unitX = typeof unitX !== 'undefined' ? unitX : this.unitX;
-            unitY = typeof unitY !== 'undefined' ? unitY : this.unitY;
-            unitXText = typeof unitXText !== 'undefined' ? unitXText : this.unitXText;
-            unitYText = typeof unitYText !== 'undefined' ? unitYText : this.unitYText;
-            
-            // 縦軸描画
-            this.DrawLine(opX,opY,opX,maxY,1,axisColor);
+        opX = typeof opX !== 'undefined' ? opX : this.opX;
+        opY = typeof opY !== 'undefined' ? opY : this.opY;
+        maxX = typeof maxX !== 'undefined' ? maxX : this.maxX;
+        maxY = typeof maxY !== 'undefined' ? maxY : this.maxY;
+        
+        unitX = typeof unitX !== 'undefined' ? unitX : this.unitX;
+        unitY = typeof unitY !== 'undefined' ? unitY : this.unitY;
+        unitXText = typeof unitXText !== 'undefined' ? unitXText : this.unitXText;
+        unitYText = typeof unitYText !== 'undefined' ? unitYText : this.unitYText;
+        
+        // 縦軸描画
+        this.DrawLine(opX,opY,opX,maxY,1,axisColor);
+        let tmpY = opY;
+        if(yCount[1] > 0){
             // 縦軸単位線描画
-            var tmpY = opY - unitY;
-            for(let i=0;tmpY > maxY;i++){
+            tmpY = opY - unitY;
+            // 縦軸単位線（マイナス方向）
+            for(let i=yCount[1]-1;i > 0;i--){
                 // 基準点描画
                 this.DrawLine(opX-3, Math.round(tmpY), opX+3, Math.round(tmpY), 1, axisColor);
                 // 基準単位描画
-                this.DrawFillText(opX-4, Math.round(tmpY) + 6, this.unitY * i, 'right')
+                this.DrawFillText(opX-4, Math.round(tmpY) + 6, (-1) * this.unitY * i, 'right')
                 // 基準線描画
                 this.DrawLine(opX+4, Math.round(tmpY), this.maxX, Math.round(tmpY), 0.5, '#000000', true);
-                tmpY = opY - (unitY * (i + 1));
-            }
-            // 縦軸単位表記描画
-            this.DrawFillText(30,30,unitXText, 'left');
-            
-            // 横軸描画
-            this.DrawLine(opX,opY,maxX,opY,1,axisColor);
-            // 横軸単位線描画
-            var tmpX = opX + unitX; 
-            while(tmpX < maxX){
-                // 基準点描画
-                this.DrawLine(tmpX,opY-3,tmpX,opY+3,1,axisColor);
-                tmpX = tmpX + unitX;
-            }
-            // 横軸単位表記描画
-            this.DrawFillText(maxX,this.height-50,unitYText, 'left');
-        }
-
-        /**
-         * 凡例の作成
-         * @param {array(string)} legendText
-         * @param {string} fillColor 
-         * @returns {undefined}
-         */
-        CreateLegend(legendText,fillColor){
-            legendText = legendText !== 'undefined' ? legendText : this.legendText;
-            if(!legendText){
-                return;
-            }
-            const legendCount = legendText.length;
-            let tmpX = this.width - (legendCount * 60) - 10;
-            let tmpY = this.height - 40;
-            this.DrawBox(tmpX,tmpY,(legendCount * 60),30,'#000000',true);
-            
-            for(let i=0; i<legendCount; i++){
-                this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
-                this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i], 'left',50,'#000000',"10px 'ＭＳ ゴシック'");
-            }
-        }
-
-        /**
-         * タイトルの作成
-         * @param {string} title
-         * @param {int} position
-         * @return {undifined}
-         */
-        CreateTitle(title,position){
-            title    = title    !== 'undefined' ? title    : this.titleText;
-            position = position !== 'undefined' ? position : this.titlePosition;
-            
-            this.DrawFillText(this.width/2,position === 0 ? 20 : this.height -20,title, 'center');
-        }
-
-        /**
-         * canvas要素の取得チェック
-         * @returns {Boolean}
-         */
-        checkCanvas(){
-            if(this.canvas === null || !this.canvas.getContext){
-                return false;
-            }else{
-                return true;
+                tmpY = tmpY - unitY;
             }
         }
         
-        /**
-         * グラフデータのチェック
-         * @param {array} data  グラフデータ
-         * @param {int} type    グラフ種別
-         * @returns {Boolean}
-         */
-        checkData(data = '',type){
-            if(data === null || data === ''){
-                return false;
-            }
-            switch(type){
-                case 1 : // 棒グラフ
-                    break;
-                case 2 : // 折れ線グラフ
-                    break;
-                case 3 : // 円グラフ
-                    break;
-            }
+        // 横軸描画
+        this.DrawLine(opX,tmpY,maxX,tmpY,1,axisColor);
+        // 横軸単位線描画
+        var tmpX = opX + unitX; 
+        while(tmpX < maxX){
+            // 基準点描画
+            this.DrawLine(tmpX,tmpY-3,tmpX,tmpY+3,1,axisColor);
+            tmpX = tmpX + unitX;
+        }
+        // 横軸単位表記描画
+        this.DrawFillText(maxX,this.height-50,unitYText, 'left');
+        
+        // 基準単位描画(X軸)
+        this.DrawFillText(opX-4, Math.round(tmpY) + 6, '0', 'right')
+        
+        // 描画位置を1ユニット進める
+        tmpY = tmpY - unitY;
+        
+        // 縦軸単位線（プラス方向）
+        for(let i=1;i <= yCount[0]-1;i++){
+            // 基準点描画
+            this.DrawLine(opX-3, Math.round(tmpY), opX+3, Math.round(tmpY), 1, axisColor);
+            // 基準単位描画
+            this.DrawFillText(opX-4, Math.round(tmpY) + 6, this.unitY * i, 'right')
+            // 基準線描画
+            this.DrawLine(opX+4, Math.round(tmpY), this.maxX, Math.round(tmpY), 0.5, '#000000', true);
+            tmpY = tmpY - unitY;
+        }
+        // 縦軸単位表記描画
+        this.DrawFillText(30,30,unitXText, 'left');
+        
+    }
+
+    /**
+     * 凡例の作成
+     * @param {array[string...]} legendText 凡例データ
+     * @param {array[string...]} fillColor    凡例用色データ
+     * @returns {void}
+     */
+    CreateLegend(legendText,fillColor){
+        legendText = legendText !== 'undefined' ? legendText : this.legendText;
+        if(!legendText){
+            return;
+        }
+        const legendCount = legendText.length;
+        let tmpX = this.width - (legendCount * 60) - 10;
+        let tmpY = this.height - 40;
+        this.DrawBox(tmpX,tmpY,(legendCount * 60),30,'#000000',true);
+        
+        for(let i=0; i<legendCount; i++){
+            this.DrawFillBox(tmpX + i*60 + 10,tmpY + 9,12,12,fillColor[i],fillColor[i],true)
+            this.DrawFillText(tmpX + i*60 + 24,tmpY + 18,legendText[i], 'left',50,'#000000',"10px 'ＭＳ ゴシック'");
+        }
+    }
+
+    /**
+     * タイトルの作成
+     * @param {String} title    タイトルテキスト
+     * @param {int} titlePosition   表示位置フラグ
+     * @return {void}
+     */
+    CreateTitle(title,titlePosition){
+        title    = title    !== 'undefined' ? title    : this.titleText;
+        titlePosition = titlePosition !== 'undefined' ? titlePosition : this.titlePosition;
+        
+        this.DrawFillText(this.width/2,titlePosition === 0 ? 20 : this.height -20,title, 'center');
+    }
+
+    /**
+     * canvas要素の取得チェック
+     * @returns {Boolean}
+     */
+    CheckCanvas(){
+        if(this.canvas === null || !this.canvas.getContext){
+            return false;
+        }else{
             return true;
         }
+    }
+    
+    /**
+     * グラフデータのチェック
+     * @param {array} data  グラフデータ
+     * @param {int} type    グラフ種別
+     * @returns {Boolean}
+     */
+    CheckData(data = '',type){
+        if(data === null || data === ''){
+            return false;
+        }
+        switch(type){
+            case 1 : // 棒グラフ
+                break;
+            case 2 : // 折れ線グラフ
+                break;
+            case 3 : // 円グラフ
+                break;
+        }
+        return true;
+    }
+    
+    /**
+     * 描画設定の解除
+     */
+    resetDrawConf(){
+        this.ctx.fillStyle = this.textColor;
+        this.ctx.font      = this.textFont;
+        this.ctx.textAlign = this.textAlign;
+        this.ctx.lineWidth   = this.lineWidth;
+        this.ctx.strokeStyle = this.lineColor;
+        // 破線フラグ解除
+        this.ctx.setLineDash(this.lineDash['no']);
+        // 描画色デフォルト
+        this.ctx.strokeStyle = this.lineColor;
+        
+    }
+    
+    /**
+     * 棒グラフ、折れ線グラフ用 データ処理部共通化
+     * @param {array} 描画データ
+     * @return {array} 描画データ＋[drawDataCount:描画データ数,xInterval:x軸の間隔,yInterval:Y軸の間隔,xLineHeightx軸の描画高さ]
+     */
+    dataFunction(data){
+        // グラフ間隔の計算(X軸)
+        const xCount = data.length;
+        const xInterval = (this.maxX - this.opX) / (xCount + 1);
+        
+        // 1グループのデータ数の取得
+        const drawDataCount = data[0].length - 1;
+        
+        // Y軸最大値計算用
+        let maxYdata = 0;
+        for(let i=0;i<data.length;i++){
+            for(let j=1;j<drawDataCount+1;j++){
+                // Y軸最大値の再計算
+                if(maxYdata < data[i][j]){
+                    maxYdata = data[i][j];
+                }
+            }
+        }
+        // Y軸最小値計算用
+        let minYdata = 0;
+        let YminusFlg = false;
+        for(let i=0;i<data.length;i++){
+            for(let j=1;j<drawDataCount+1;j++){
+                // Y軸最小値の再計算
+                if(minYdata > data[i][j]){
+                    minYdata = data[i][j];
+                }
+            }
+        }
+        // Y軸の計算[ プラス方向 , マイナス報告 ]
+        const yCount = [ Math.ceil(maxYdata / this.unitY) , Math.ceil((-1) * minYdata / this.unitY) ];
+        const yInterval = Math.abs(this.maxY - this.opY) / (yCount[0] + yCount[1]);
+        // 横軸描画高さを計算
+        const xLineHeight = this.opY - yCount[1] * yInterval;
+
+        // 軸の生成
+        this.CreateAxis(this.axisColor,this.opX,this.opY,this.maxX,this.maxY,xInterval,yInterval,yCount,this.unitXText,this.unitYText);
+        
+        
+        // データセット、値返却
+        data.drawDataCount = drawDataCount;
+        
+        data.xInterval = xInterval;
+        data.yInterval = yInterval;
+        
+        data.xLineHeight = xLineHeight;
+        
+        return data;
+    }
 }
