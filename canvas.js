@@ -13,6 +13,20 @@ class DrawGraph{
      * @returns {void}
      */
     constructor(canvas,width,height){
+        
+        /** 描画データ */
+        this.data = [];
+        this.data.drawDataCount = 0;
+        this.data.xInterval     = 'undefined';
+        this.data.yInterval     = 'undefined';
+        this.data.yCount        = [];
+        
+        /** 基準線に関わる設定 */
+        this.axis = [];
+        this.axis.xLineHeight   = 'undefined';
+        this.axis.color = '#000000';
+        this.axis.autoVerticalScaleAdjust = true;
+
         /** canvasの縦横幅の設定 */
         this.width  = typeof width  !== 'undefined' ? width  : 800;
         this.height = typeof height !== 'undefined' ? height : 500;
@@ -51,9 +65,7 @@ class DrawGraph{
         this.unitXText = "横軸";
         /** 横軸の単位記載 */
         this.unitYText = "縦軸";
-        /** 軸の色 */
-        this.axisColor = "#000000";
-        
+
         /** 文字色 */
         this.textColor = "#000000";
         /** 文字フォント */
@@ -129,27 +141,30 @@ class DrawGraph{
         let barWidth = this.barWidth;
         
         // データの処理
-        data = this.dataFunction(data);
+        this.dataProcessing(data);
 
-        // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす）
-        for(let i=0;i<data.length;i++){
-            let xPosition = this.opX + (data.xInterval * (i+1)) - (data.drawDataCount * this.barWidth)/2;
+        // 軸の生成
+        this.CreateAxis(this.axis.color,this.opX,this.opY,this.maxX,this.maxY,this.data.xInterval,this.data.yInterval,this.data.yCount,this.unitXText,this.unitYText);
+
+        // グラフの描画（基準線との重複を避けるため、下線は基準-1、上方へ動かす。マイナスデータはプラス方向）
+        for(let i=0;i<this.data.xCount;i++){
+            let xPosition = this.opX + (this.data.xInterval * (i+1)) - (this.data.drawDataCount * this.barWidth)/2;
             let yPosition;
 
             for(let j=1;j<data[i].length;j++){
                 // データを基準に合わせて処理
-                let yData = (data[i][j] / this.unitY) * data.yInterval;
-                if(data[i][j] > 0){
-                    yPosition = data.xLineHeight - 0.5;
+                let yData = (this.data.data[i][j] / this.unitY) * this.data.yInterval;
+                if(this.data.data[i][j] > 0){
+                    yPosition = this.axis.xLineHeight - 0.5;
                 }else{
-                    yPosition = data.xLineHeight + 0.5;
+                    yPosition = this.axis.xLineHeight + 0.5;
                 }
 
                 this.DrawFillBox(xPosition + (this.barWidth * (j-1)), yPosition, barWidth, yData, this.barFillColor[j-1], this.barLineColor, false);
             }
             
             // 文字の描画
-            this.DrawFillText(this.opX + (data.xInterval * (i+1)), yPosition + 21, data[i][0], 'center', 40);
+            this.DrawFillText(this.opX + (this.data.xInterval * (i+1)), this.axis.xLineHeight + 21, this.data.data[i][0], 'center', 40);
         }
 
         this.CreateLegend(legendText,this.barFillColor);
@@ -168,29 +183,32 @@ class DrawGraph{
         }
 
         // データの処理
-        data = this.dataFunction(data);
+        this.dataProcessing(data);
+
+        // 軸の生成
+        this.CreateAxis(this.axis.color,this.opX,this.opY,this.maxX,this.maxY,this.data.xInterval,this.data.yInterval,this.data.yCount,this.unitXText,this.unitYText);
 
         // 黒丸の大きさ
         let circleRad = this.circleRad;
             
         // グラフの描画
-        for(let i=0;i<data.length;i++){
-            let xPosition = this.opX + (data.xInterval * (i+1));
-            let yPosition = data.xLineHeight;
+        for(let i=0;i<this.data.xCount;i++){
+            let xPosition = this.opX + (this.data.xInterval * (i+1));
+            let yPosition = this.axis.xLineHeight;
 
-            for(let j=1;j<data[i].length;j++){
-                let yData = (data[i][j] / this.unitY) * data.yInterval;
+            for(let j=1;j<this.data.xCount;j++){
+                let yData = (this.data.data[i][j] / this.unitY) * this.data.yInterval;
                 this.DrawFillCircle(xPosition, yPosition - yData, circleRad, this.circleColor[j-1]);
                 
-                if(data[i+1]){
-                    this.DrawLine(xPosition, yPosition - yData, xPosition + data.xInterval, yPosition - (data[i+1][j] / this.unitY) * data.yInterval,this.lineWidth, this.circleLineColor[j-1]);
+                if(this.data.data[i+1]){
+                    this.DrawLine(xPosition, yPosition - yData, xPosition + this.data.xInterval, yPosition - (this.data.data[i+1][j] / this.unitY) * this.data.yInterval,this.lineWidth, this.circleLineColor[j-1]);
                 }else{
                     this.DrawFillText(xPosition + 5, yPosition - yData + 3, legendText[j-1], 'left', 40, '#000000', "10px 'ＭＳ ゴシック'");
                 }
             }
 
             // 文字の描画
-            this.DrawFillText(xPosition, yPosition + 21, data[i][0], 'center', 40);
+            this.DrawFillText(xPosition, yPosition + 21, this.data.data[i][0], 'center', 40);
             
         }
 
@@ -423,7 +441,7 @@ class DrawGraph{
      */
     CreateAxis(axisColor,opX,opY,maxX,maxY,unitX,unitY,yCount,unitXText,unitYText){
         // 描画色の設定
-        axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axisColor;
+        axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axis.color;
         
         opX = typeof opX !== 'undefined' ? opX : this.opX;
         opY = typeof opY !== 'undefined' ? opY : this.opY;
@@ -438,11 +456,11 @@ class DrawGraph{
         // 縦軸描画
         this.DrawLine(opX,opY,opX,maxY,1,axisColor);
         let tmpY = opY;
-        if(yCount[1] > 0){
+        if(yCount.minus > 0){
             // 縦軸単位線描画
             tmpY = opY - unitY;
             // 縦軸単位線（マイナス方向）
-            for(let i=yCount[1]-1;i > 0;i--){
+            for(let i=yCount.minus - 1;i > 0;i--){
                 // 基準点描画
                 this.DrawLine(opX-3, Math.round(tmpY), opX+3, Math.round(tmpY), 1, axisColor);
                 // 基準単位描画
@@ -472,7 +490,7 @@ class DrawGraph{
         tmpY = tmpY - unitY;
         
         // 縦軸単位線（プラス方向）
-        for(let i=1;i <= yCount[0]-1;i++){
+        for(let i=1;i <= yCount.plus - 1;i++){
             // 基準点描画
             this.DrawLine(opX-3, Math.round(tmpY), opX+3, Math.round(tmpY), 1, axisColor);
             // 基準単位描画
@@ -575,53 +593,52 @@ class DrawGraph{
      * @param {array} 描画データ
      * @return {array} 描画データ＋[drawDataCount:描画データ数,xInterval:x軸の間隔,yInterval:Y軸の間隔,xLineHeightx軸の描画高さ]
      */
-    dataFunction(data){
+    dataProcessing(data){
+        // データの登録
+        this.data.data = data;
+        
         // グラフ間隔の計算(X軸)
-        const xCount = data.length;
-        const xInterval = (this.maxX - this.opX) / (xCount + 1);
+        this.data.xCount = this.data.data.length;
+        this.data.xInterval = (this.maxX - this.opX) / (this.data.xCount + 1);
         
         // 1グループのデータ数の取得
-        const drawDataCount = data[0].length - 1;
+        this.data.drawDataCount = data[0].length - 1;
         
         // Y軸最大値計算用
-        let maxYdata = 0;
-        for(let i=0;i<data.length;i++){
-            for(let j=1;j<drawDataCount+1;j++){
+        this.data.maxYdata = 0;
+        for(let i=0;i<this.data.xCount;i++){
+            for(let j=1;j<this.data.drawDataCount+1;j++){
                 // Y軸最大値の再計算
-                if(maxYdata < data[i][j]){
-                    maxYdata = data[i][j];
+                if(this.data.maxYdata < this.data.data[i][j]){
+                    this.data.maxYdata = this.data.data[i][j];
                 }
             }
         }
-        // Y軸最小値計算用
-        let minYdata = 0;
-        let YminusFlg = false;
-        for(let i=0;i<data.length;i++){
-            for(let j=1;j<drawDataCount+1;j++){
+        // Y軸最小値計算用(最小値がプラスの場合には0)
+        this.data.minYdata = 0;
+        for(let i=0;i<this.data.xCount;i++){
+            for(let j=1;j<this.data.drawDataCount+1;j++){
                 // Y軸最小値の再計算
-                if(minYdata > data[i][j]){
-                    minYdata = data[i][j];
+                if(this.data.minYdata > this.data.data[i][j]){
+                    this.data.minYdata = this.data.data[i][j];
                 }
             }
         }
         // Y軸の計算[ プラス方向 , マイナス報告 ]
-        const yCount = [ Math.ceil(maxYdata / this.unitY) , Math.ceil((-1) * minYdata / this.unitY) ];
-        const yInterval = Math.abs(this.maxY - this.opY) / (yCount[0] + yCount[1]);
-        // 横軸描画高さを計算
-        const xLineHeight = this.opY - yCount[1] * yInterval;
+//        this.data.yCount.plus  = Math.ceil(this.data.maxYdata / this.unitY);
+//        this.data.yCount.minus = Math.ceil((-1) * this.data.minYdata / this.unitY)
+        
+        // Y軸基準描画間隔の再計算
+        if(this.data.maxYdata - this.data.minYdata > this.unitY * 10 && this.axis.autoVerticalScaleAdjust){
+            // 縦軸目盛自動調整
+            this.unitY = Math.pow(10,String(this.data.maxYdata - this.data.minYdata).length - 1);
+        }
+        
+        this.data.yCount.plus  = Math.ceil(this.data.maxYdata / this.unitY);
+        this.data.yCount.minus = Math.ceil((-1) * this.data.minYdata / this.unitY)
 
-        // 軸の生成
-        this.CreateAxis(this.axisColor,this.opX,this.opY,this.maxX,this.maxY,xInterval,yInterval,yCount,this.unitXText,this.unitYText);
-        
-        
-        // データセット、値返却
-        data.drawDataCount = drawDataCount;
-        
-        data.xInterval = xInterval;
-        data.yInterval = yInterval;
-        
-        data.xLineHeight = xLineHeight;
-        
-        return data;
+        this.data.yInterval = Math.abs(this.maxY - this.opY) / (this.data.yCount.plus + this.data.yCount.minus);
+        // 横軸描画高さを計算
+        this.axis.xLineHeight = this.opY - this.data.yCount.minus * this.data.yInterval;
     }
 }
