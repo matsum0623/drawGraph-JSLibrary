@@ -94,12 +94,22 @@ class DrawGraph{
         
         /** 基準の色セット */
         this.standardColorSet = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "F00FFFF"            
+            "#FF2800",  // 赤
+            "#FAF500",  // 黄色
+            "#35A16B",  // 緑
+            "#0041FF",  // 青
+            "#66CCFF",  // 空色
+            "#FF99A0",  // ピンク
+            "#FF9900",  // オレンジ
+            "#9A0079",  // 紫
+            "#663300",  // 茶
+            "#FFD1D1",  // 明るいピンク
+            "#FFFF99",  // クリーム
+            "#CBF266",  // 明るい黄緑
+            "#B4EBFA",  // 明るい空色
+            "#EDC58F",  // ベージュ
+            "#87E7B0",  // 明るい緑
+            "#C7B2DE"   // 明るい紫
         ];
         /** 基準色(黒) */
         this.standardColorBlack = '#000000';
@@ -194,15 +204,21 @@ class DrawGraph{
         );
 
         // グラフの描画
-        //     基準線との重複を避けるため、下線は基準-1、上方へ動かす。
+        // 棒グラフの幅調整(隣とかぶる場合のみ)
+        if(this.barGraph.barWidth * this.data.drawDataCount >= this.data.xInterval){
+            this.barGraph.barWidth = this.data.xInterval / (this.data.drawDataCount + 1);
+        }
+        
+        //     基準線との重複を避けるため、下線は基準-0.5、上方へ動かす。
         //     マイナスデータはプラス方向へ動かす。
         for(let i=0;i<this.data.xCount;i++){
             let xPosition =
-                this.axis.opX  + this.data.xInterval * (i+1)
-                    - (this.data.drawDataCount * this.barGraph.barWidth)/2;
+                this.axis.opX 
+                     + this.data.xInterval / 2 
+                     + this.data.xInterval * i;
             let yPosition;
 
-            for(let j=1;j<data[i].length;j++){
+            for(let j=1; j<this.data.drawDataCount+1; j++){
                 // データを基準に合わせて処理
                 let yData =
                     this.data.data[i][j] / this.axis.unitY * this.data.yInterval;
@@ -213,7 +229,9 @@ class DrawGraph{
                 }
 
                 this.DrawFillBox(
-                    xPosition + (this.barGraph.barWidth * (j-1)),
+                    xPosition
+                        - this.data.drawDataCount * this.barGraph.barWidth / 2
+                        + this.barGraph.barWidth  * (j-1),
                     yPosition,
                     this.barGraph.barWidth,
                     yData,
@@ -225,7 +243,7 @@ class DrawGraph{
             
             // 文字の描画
             this.DrawFillText(
-                this.axis.opX  + (this.data.xInterval * (i+1)),
+                xPosition,
                 this.axis.xLineHeight + 21,
                 this.data.data[i][0],
                 'center',
@@ -268,10 +286,10 @@ class DrawGraph{
 
         // グラフの描画
         for(let i=0;i<this.data.xCount;i++){
-            let xPosition = this.axis.opX  + (this.data.xInterval * (i+1));
+            let xPosition = this.axis.opX  + this.data.xInterval / 2 + this.data.xInterval * i;
             let yPosition = this.axis.xLineHeight;
 
-            for(let j=1;j<this.data.xCount;j++){
+            for(let j=1;j<this.data.drawDataCount+1;j++){
                 let yData =
                     this.data.data[i][j] / this.axis.unitY * this.data.yInterval;
                 this.DrawFillCircle(
@@ -575,7 +593,7 @@ class DrawGraph{
         // 横軸描画
         this.DrawLine(opX,tmpY,maxX,tmpY,1,axisColor);
         // 横軸単位線描画
-        var tmpX = opX + unitX; 
+        var tmpX = opX + unitX / 2; 
         while(tmpX < maxX){
             // 基準点描画
             this.DrawLine(tmpX,tmpY-3,tmpX,tmpY+3,1,axisColor);
@@ -706,7 +724,7 @@ class DrawGraph{
         
         // グラフ間隔の計算(X軸)
         this.data.xCount = this.data.data.length;
-        this.data.xInterval = (this.axis.maxX - this.axis.opX ) / (this.data.xCount + 1);
+        this.data.xInterval = (this.axis.maxX - this.axis.opX ) / this.data.xCount;
         
         // 1グループのデータ数の取得
         this.data.drawDataCount = data[0].length - 1;
