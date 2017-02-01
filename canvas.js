@@ -190,18 +190,7 @@ class DrawGraph{
         this.dataProcessing(data);
 
         // 軸の生成
-        this.CreateAxis(
-            this.axis.color,
-            this.axis.opX ,
-            this.axis.opY,
-            this.axis.maxX,
-            this.axis.maxY,
-            this.data.xInterval,
-            this.data.yInterval,
-            this.data.yCount,
-            this.axis.unitXText,
-            this.axis.unitYText
-        );
+        this.CreateAxis();
 
         // グラフの描画
         // 棒グラフの幅調整(隣とかぶる場合のみ)
@@ -251,8 +240,8 @@ class DrawGraph{
             );
         }
 
-        this.CreateLegend(this.legend.textArr,this.barGraph.barFillColor);
-        this.CreateTitle(this.graphTitle.text,this.graphTitle.position);
+        this.CreateLegend();
+        this.CreateTitle();
     }
     
     /**
@@ -271,18 +260,7 @@ class DrawGraph{
         this.dataProcessing(data);
 
         // 軸の生成
-        this.CreateAxis(
-            this.axis.color,
-            this.axis.opX,
-            this.axis.opY,
-            this.axis.maxX,
-            this.axis.maxY,
-            this.data.xInterval,
-            this.data.yInterval,
-            this.data.yCount,
-            this.axis.unitXText,
-            this.axis.unitYText
-        );
+        this.CreateAxis();
 
         // グラフの描画
         for(let i=0;i<this.data.xCount;i++){
@@ -327,8 +305,8 @@ class DrawGraph{
         }
 
         // 凡例の描画
-        this.CreateLegend(this.legend.textArr,this.barGraph.barFillColor);
-        this.CreateTitle(this.graphTitle.text,this.graphTitle.position);
+        this.CreateLegend();
+        this.CreateTitle();
     }
 
     /**
@@ -341,6 +319,7 @@ class DrawGraph{
         if(!this.CheckCanvas() || !this.CheckData(data)){
             return;
         }
+        this.legend.textArr = legendText;
         
         // 円グラフのそれぞれの割合の計算
         let dataSum = 0;
@@ -379,8 +358,8 @@ class DrawGraph{
         }
         
         // 凡例の描画
-        this.CreateLegend(legendText,this.barGraph.barFillColor);
-        this.CreateTitle(this.graphTitle.text,this.graphTitle.position);
+        this.CreateLegend();
+        this.CreateTitle();
     }
         
     // 内部関数 ///////////////////////////////////////////////////////////////
@@ -404,9 +383,9 @@ class DrawGraph{
         this.ctx.lineWidth   = lineWidth;
         this.ctx.strokeStyle = lineColor;
         if(lineDashFlg !== true){
-            this.ctx.setLineDash(this.lineDash['no']);
+            this.ctx.setLineDash(this.lineDash.no);
         }else{
-            this.ctx.setLineDash(this.lineDash['yes']);
+            this.ctx.setLineDash(this.lineDash.yes);
         }
         this.ctx.beginPath();
         this.ctx.moveTo(x1,y1);
@@ -568,6 +547,9 @@ class DrawGraph{
         
         unitX = typeof unitX !== 'undefined' ? unitX : this.axis.unitX;
         unitY = typeof unitY !== 'undefined' ? unitY : this.axis.unitY;
+        
+        yCount = typeof yCount !== 'undefined' ? yCount : this.data.yCount;
+        
         unitXText = typeof unitXText !== 'undefined' ? unitXText : this.axis.unitXText;
         unitYText = typeof unitYText !== 'undefined' ? unitYText : this.axis.unitYText;
         
@@ -630,7 +612,8 @@ class DrawGraph{
      * @returns {void}
      */
     CreateLegend(legendText,fillColor){
-        legendText = legendText !== 'undefined' ? legendText : this.legend.textArr;
+        legendText = typeof legendText !== 'undefined' ? legendText : this.legend.textArr;
+        fillColor = typeof fillColor !== 'undefined' ? fillColor : this.standardColorSet;
         if(!legendText){
             return;
         }
@@ -652,8 +635,8 @@ class DrawGraph{
      * @return {void}
      */
     CreateTitle(title,position){
-        title    = title    !== 'undefined' ? title    : this.graphTitle.text;
-        position = position !== 'undefined' ? position : this.graphTitle.position;
+        title    = typeof title    !== 'undefined' ? title    : this.graphTitle.text;
+        position = typeof position !== 'undefined' ? position : this.graphTitle.position;
         
         this.DrawFillText(
             this.canvas.width / 2,
@@ -707,7 +690,7 @@ class DrawGraph{
         this.ctx.lineWidth   = this.lineWidth;
         this.ctx.strokeStyle = this.lineColor;
         // 破線フラグ解除
-        this.ctx.setLineDash(this.lineDash['no']);
+        this.ctx.setLineDash(this.lineDash.no);
         // 描画色デフォルト
         this.ctx.strokeStyle = this.lineColor;
         
