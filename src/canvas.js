@@ -184,7 +184,10 @@ class DrawGraph {
     this.legend.textArr = legendText;
 
     // データの処理
-    this.dataProcessing(data);
+    const resDataProc = this.dataProcessing(data);
+    if (!resDataProc) {
+      return;
+    }
 
     // 軸の生成
     this.CreateAxis();
@@ -197,14 +200,14 @@ class DrawGraph {
 
     //     基準線との重複を避けるため、下線は基準-0.5、上方へ動かす。
     //     マイナスデータはプラス方向へ動かす。
-    for (let i = 0; i < this.data.xCount; i++) {
+    for (let i = 0; i < this.data.xCount; i += 1) {
       const xPosition =
         this.axis.opX
          + (this.data.xInterval / 2)
          + (this.data.xInterval * i);
       let yPosition;
 
-      for (let j = 1; j < this.data.drawDataCount + 1; j++) {
+      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
         // データを基準に合わせて処理
         const yData =
           (this.data.data[i][j] / this.axis.unitY) * this.data.yInterval;
@@ -248,23 +251,26 @@ class DrawGraph {
    * @returns {void}
    */
   DrawLineGraph(data, legendText) {
-    if (!this.CheckCanvas() || !this.CheckData(data)) {
+    if (!this.CheckCanvas()) {
       return;
     }
     this.legend.textArr = legendText;
 
     // データの処理
-    this.dataProcessing(data);
+    const resDataProc = this.dataProcessing(data);
+    if (!resDataProc) {
+      return;
+    }
 
     // 軸の生成
     this.CreateAxis();
 
     // グラフの描画
-    for (let i = 0; i < this.data.xCount; i++) {
+    for (let i = 0; i < this.data.xCount; i += 1) {
       const xPosition = this.axis.opX + (this.data.xInterval / 2) + (this.data.xInterval * i);
       const yPosition = this.axis.xLineHeight;
 
-      for (let j = 1; j < this.data.drawDataCount + 1; j++) {
+      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
         const yData =
           (this.data.data[i][j] / this.axis.unitY) * this.data.yInterval;
         this.DrawFillCircle(
@@ -312,19 +318,19 @@ class DrawGraph {
    * @returns {void}
    */
   DrawCircleGraph(data, legendText) {
-    if (!this.CheckCanvas() || !this.CheckData(data)) {
+    if (!this.CheckCanvas()) {
       return;
     }
     this.legend.textArr = legendText;
 
     // 円グラフのそれぞれの割合の計算
     let dataSum = 0;
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i += 1) {
       dataSum += data[i][1];
     }
     // 円グラフ描画
     let startAng = 0;
-    for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i += 1) {
       this.DrawFillFan(
         this.circleGraph.xp,
         this.circleGraph.yp,
@@ -370,10 +376,10 @@ class DrawGraph {
    * @param {bool} lineDashFlg    点線フラグ
    * @returns {void}
    */
-  DrawLine(x1, y1, x2, y2, lineWidth, lineColor, lineDashFlg) {
-    lineWidth = typeof lineWidth !== 'undefined' ? lineWidth : this.lineWidth;
-    lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
-    lineDashFlg = typeof lineDashFlg !== 'undefined' ? lineDashFlg : this.lineDashFlg;
+  DrawLine(x1, y1, x2, y2, _lineWidth, _lineColor, _lineDashFlg) {
+    const lineWidth = typeof _lineWidth !== 'undefined' ? _lineWidth : this.lineWidth;
+    const lineColor = typeof _lineColor !== 'undefined' ? _lineColor : this.lineColor;
+    const lineDashFlg = typeof _lineDashFlg !== 'undefined' ? _lineDashFlg : this.lineDashFlg;
 
     this.ctx.lineWidth = lineWidth;
     this.ctx.strokeStyle = lineColor;
@@ -400,12 +406,10 @@ class DrawGraph {
    * @param {boolean} flg   基準フラグ（true：左上、false：左下）
    * @returns {void}
    */
-  DrawFillCircle(x, y, rad, fillColor, flg) {
-    fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
-    flg = typeof flg !== 'undefined' ? flg : true;
-    if (!flg) {
-      y = this.canvas.height - y;
-    }
+  DrawFillCircle(x, _y, rad, _fillColor, _flg) {
+    const fillColor = typeof _fillColor !== 'undefined' ? _fillColor : this.fillColor;
+    const flg = typeof _flg !== 'undefined' ? _flg : true;
+    const y = (!flg) ? this.canvas.height - _y : _y;
     this.ctx.beginPath();
     this.ctx.arc(x, y, rad, 0, Math.PI * 2, true);
     this.ctx.fillStyle = fillColor;
@@ -427,11 +431,11 @@ class DrawGraph {
    * @param {String} fillColor
    * @returns {undefined}
    */
-  DrawFillFan(x, y, rad, startAng, endAng, fillColor) {
-    fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
+  DrawFillFan(x, y, rad, _startAng, _endAng, _fillColor) {
+    const fillColor = typeof _fillColor !== 'undefined' ? _fillColor : this.fillColor;
 
-    startAng -= (Math.PI / 2);
-    endAng -= (Math.PI / 2);
+    const startAng = _startAng - (Math.PI / 2);
+    const endAng = _endAng - (Math.PI / 2);
 
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
@@ -453,13 +457,11 @@ class DrawGraph {
    * @param {bool} flg    基準フラグ（true：左上、false：左下）
    * @returns {void}
    */
-  DrawFillBox(x, y, width, height, fillColor, lineColor, flg) {
-    fillColor = typeof fillColor !== 'undefined' ? fillColor : this.fillColor;
-    lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
-    flg = typeof flg !== 'undefined' ? flg : true;
-    if (!flg) {
-      height *= -1;
-    }
+  DrawFillBox(x, y, width, _height, _fillColor, _lineColor, _flg) {
+    const fillColor = typeof _fillColor !== 'undefined' ? _fillColor : this.fillColor;
+    const lineColor = typeof _lineColor !== 'undefined' ? _lineColor : this.lineColor;
+    const flg = typeof _flg !== 'undefined' ? _flg : true;
+    const height = (!flg) ? -1 * _height : _height;
     this.ctx.strokeStyle = lineColor;
     this.ctx.fillStyle = fillColor;
     this.ctx.beginPath();
@@ -480,12 +482,10 @@ class DrawGraph {
    * @param {bool} flg    基準フラグ（true：左上、false：左下）
    * @returns {void}
    */
-  DrawBox(x, y, width, height, lineColor, flg) {
-    lineColor = typeof lineColor !== 'undefined' ? lineColor : this.lineColor;
-    flg = typeof flg !== 'undefined' ? flg : true;
-    if (!flg) {
-      height *= -1;
-    }
+  DrawBox(x, y, width, _height, _lineColor, _flg) {
+    const lineColor = typeof _lineColor !== 'undefined' ? _lineColor : this.lineColor;
+    const flg = typeof _flg !== 'undefined' ? _flg : true;
+    const height = (flg) ? _height : -1 * _height;
     this.ctx.strokeStyle = lineColor;
     this.ctx.beginPath();
     this.ctx.strokeRect(x, y, width, height);
@@ -504,10 +504,10 @@ class DrawGraph {
    * @param {String} textFont     文字フォント
    * @returns {void}
    */
-  DrawFillText(x, y, text, textAlign, maxLength, textColor, textFont) {
-    textColor = typeof textColor !== 'undefined' ? textColor : this.textColor;
-    textFont = typeof textFont !== 'undefined' ? textFont : this.textFont;
-    textAlign = typeof textAlign !== 'undefined' ? textAlign : this.textAlign;
+  DrawFillText(x, y, text, _textAlign, maxLength, _textColor, _textFont) {
+    const textColor = typeof _textColor !== 'undefined' ? _textColor : this.textColor;
+    const textFont = typeof _textFont !== 'undefined' ? _textFont : this.textFont;
+    const textAlign = typeof _textAlign !== 'undefined' ? _textAlign : this.textAlign;
 
     this.ctx.fillStyle = textColor;
     this.ctx.font = textFont;
@@ -531,22 +531,33 @@ class DrawGraph {
    * @param {String} unitYText Y軸の単位表記
    * @returns {void}
    */
-  CreateAxis(axisColor, opX, opY, maxX, maxY, unitX, unitY, yCount, unitXText, unitYText) {
+  CreateAxis(
+    _axisColor,
+    _opX,
+    _opY,
+    _maxX,
+    _maxY,
+    _unitX,
+    _unitY,
+    _yCount,
+    _unitXText,
+    _unitYText,
+  ) {
     // 描画色の設定
-    axisColor = typeof axisColor !== 'undefined' ? axisColor : this.axis.color;
+    const axisColor = typeof _axisColor !== 'undefined' ? _axisColor : this.axis.color;
 
-    opX = typeof opX !== 'undefined' ? opX : this.axis.opX;
-    opY = typeof opY !== 'undefined' ? opY : this.axis.opY;
-    maxX = typeof maxX !== 'undefined' ? maxX : this.axis.maxX;
-    maxY = typeof maxY !== 'undefined' ? maxY : this.axis.maxY;
+    const opX = typeof _opX !== 'undefined' ? _opX : this.axis.opX;
+    const opY = typeof _opY !== 'undefined' ? _opY : this.axis.opY;
+    const maxX = typeof _maxX !== 'undefined' ? _maxX : this.axis.maxX;
+    const maxY = typeof _maxY !== 'undefined' ? _maxY : this.axis.maxY;
 
-    unitX = typeof unitX !== 'undefined' ? unitX : this.axis.unitX;
-    unitY = typeof unitY !== 'undefined' ? unitY : this.axis.unitY;
+    const unitX = typeof _unitX !== 'undefined' ? _unitX : this.axis.unitX;
+    const unitY = typeof _unitY !== 'undefined' ? _unitY : this.axis.unitY;
 
-    yCount = typeof yCount !== 'undefined' ? yCount : this.data.yCount;
+    const yCount = typeof _yCount !== 'undefined' ? _yCount : this.data.yCount;
 
-    unitXText = typeof unitXText !== 'undefined' ? unitXText : this.axis.unitXText;
-    unitYText = typeof unitYText !== 'undefined' ? unitYText : this.axis.unitYText;
+    const unitXText = typeof _unitXText !== 'undefined' ? _unitXText : this.axis.unitXText;
+    const unitYText = typeof _unitYText !== 'undefined' ? _unitYText : this.axis.unitYText;
 
     // 縦軸描画
     this.DrawLine(opX, opY, opX, maxY, 1, axisColor);
@@ -556,7 +567,7 @@ class DrawGraph {
       // 縦軸単位線描画
       tmpY = opY - unitY;
       // 縦軸単位線（マイナス方向）
-      for (let i = yCount.minus - 1; i > 0; i--) {
+      for (let i = yCount.minus - 1; i > 0; i -= 1) {
         // 基準点描画
         this.DrawLine(opX - 3, Math.round(tmpY), opX + 3, Math.round(tmpY), 1, axisColor);
         // 基準単位描画
@@ -594,7 +605,7 @@ class DrawGraph {
     tmpY -= unitY;
 
     // 縦軸単位線（プラス方向）
-    for (let i = 1; i <= yCount.plus - 1; i++) {
+    for (let i = 1; i <= yCount.plus - 1; i += 1) {
       // 基準点描画
       this.DrawLine(opX - 3, Math.round(tmpY), opX + 3, Math.round(tmpY), 1, axisColor);
       // 基準単位描画
@@ -621,9 +632,9 @@ class DrawGraph {
    * @param {array[string...]} fillColor    凡例用色データ
    * @returns {void}
    */
-  CreateLegend(legendText, fillColor) {
-    legendText = typeof legendText !== 'undefined' ? legendText : this.legend.textArr;
-    fillColor = typeof fillColor !== 'undefined' ? fillColor : this.standardColorSet;
+  CreateLegend(_legendText, _fillColor) {
+    const legendText = typeof _legendText !== 'undefined' ? _legendText : this.legend.textArr;
+    const fillColor = typeof _fillColor !== 'undefined' ? _fillColor : this.standardColorSet;
     if (!legendText) {
       return;
     }
@@ -632,7 +643,7 @@ class DrawGraph {
     const tmpY = this.canvas.height - 40;
     this.DrawBox(tmpX, tmpY, (legendCount * 60), 30, this.standardColorBlack, true);
 
-    for (let i = 0; i < legendCount; i++) {
+    for (let i = 0; i < legendCount; i += 1) {
       this.DrawFillBox(tmpX + (i * 60) + 10, tmpY + 9, 12, 12, fillColor[i], fillColor[i], true);
       this.DrawFillText(tmpX + (i * 60) + 24, tmpY + 18, legendText[i], 'left', 50, this.legend.textColor, this.standardFontSmall);
     }
@@ -644,9 +655,9 @@ class DrawGraph {
    * @param {int} titlePosition   表示位置フラグ
    * @return {void}
    */
-  CreateTitle(title, position) {
-    title = typeof title !== 'undefined' ? title : this.graphTitle.text;
-    position = typeof position !== 'undefined' ? position : this.graphTitle.position;
+  CreateTitle(_title, _position) {
+    const title = typeof _title !== 'undefined' ? _title : this.graphTitle.text;
+    const position = typeof _position !== 'undefined' ? _position : this.graphTitle.position;
 
     this.DrawFillText(
       this.canvas.width / 2,
@@ -663,30 +674,6 @@ class DrawGraph {
   CheckCanvas() {
     if (this.canvas.element === null || !this.canvas.element.getContext) {
       return false;
-    }
-    return true;
-  }
-
-  /**
-   * グラフデータのチェック
-   * @param {array} data  グラフデータ
-   * @param {int} type    グラフ種別
-   * @returns {Boolean}
-   */
-  // TODO dataProcessingにとりこみ削除する
-  CheckData(data = '', type) {
-    if (data === null || data === '') {
-      return false;
-    }
-    switch (type) {
-      case 1:// 棒グラフ
-        break;
-      case 2:// 折れ線グラフ
-        break;
-      case 3:// 円グラフ
-        break;
-      default:
-        break;
     }
     return true;
   }
@@ -712,9 +699,11 @@ class DrawGraph {
    * @return {array} 描画データ＋[drawDataCount:描画データ数,xInterval:x軸の間隔,yInterval:Y軸の間隔,xLineHeightx軸の描画高さ]
    */
   dataProcessing(data) {
+    if (data === null || data === '') {
+      return false;
+    }
     // データの登録
     this.data.data = data;
-
     // グラフ間隔の計算(X軸)
     this.data.xCount = this.data.data.length;
     this.data.xInterval = (this.axis.maxX - this.axis.opX) / this.data.xCount;
@@ -724,8 +713,8 @@ class DrawGraph {
 
     // Y軸最大値計算用
     this.data.maxYdata = 0;
-    for (let i = 0; i < this.data.xCount; i++) {
-      for (let j = 1; j < this.data.drawDataCount + 1; j++) {
+    for (let i = 0; i < this.data.xCount; i += 1) {
+      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
         // Y軸最大値の再計算
         if (this.data.maxYdata < this.data.data[i][j]) {
           this.data.maxYdata = this.data.data[i][j];
@@ -734,8 +723,8 @@ class DrawGraph {
     }
     // Y軸最小値計算用(最小値がプラスの場合には0)
     this.data.minYdata = 0;
-    for (let i = 0; i < this.data.xCount; i++) {
-      for (let j = 1; j < this.data.drawDataCount + 1; j++) {
+    for (let i = 0; i < this.data.xCount; i += 1) {
+      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
         // Y軸最小値の再計算
         if (this.data.minYdata > this.data.data[i][j]) {
           this.data.minYdata = this.data.data[i][j];
@@ -762,5 +751,7 @@ class DrawGraph {
     // 横軸描画高さを計算
     this.axis.xLineHeight =
       this.axis.opY - (this.data.yCount.minus * this.data.yInterval);
+
+    return true;
   }
 }
