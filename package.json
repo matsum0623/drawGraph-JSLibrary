@@ -1,7 +1,7 @@
 {
   "name": "draw_graph",
   "version": "1.0.0",
-  "description": "JSのCanvas機能を使用したグラフ描画ライブラリです。 IEでは動作しない可能性があります。",
+  "description": "JSのCanvas機能を使用したお絵描き帖。",
   "main": "src\\index.js",
   "dependencies": {
     "babel": "^6.23.0"
@@ -22,12 +22,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matsum0623/drawGraph-JSLibrary.git"
+    "url": "https://github.com/matsum0623/oekaki-canvas.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/matsum0623/drawGraph-JSLibrary/issues"
+    "url": "https://github.com/matsum0623/oekaki-canvas/issues"
   },
-  "homepage": "https://github.com/matsum0623/drawGraph-JSLibrary#readme"
+  "homepage": "https://github.com/matsum0623/oekaki-canvas#readme"
 }

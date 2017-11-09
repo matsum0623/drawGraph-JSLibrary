@@ -204,8 +204,8 @@ class DrawGraph {
     for (let i = 0; i < this.data.xCount; i += 1) {
       const xPosition =
         this.axis.opX
-         + (this.data.xInterval / 2)
-         + (this.data.xInterval * i);
+          + (this.data.xInterval / 2)
+          + (this.data.xInterval * i);
       let yPosition;
 
       for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
