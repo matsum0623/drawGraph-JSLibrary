@@ -1,10 +1,23 @@
-/* global document */
+import { Canvas } from './class/Canvas.class';
+import { Axis } from './class/Axis.class';
+import { Graph } from './class/Graph.class';
+
 /**
  * Canvasによるグラフ描画ライブラリ
  * ES2015の機能を使用しているため、IEでは動作しない=>IE時の考慮は未実装
  * 現在は２Dのみの対応
  */
 class DrawGraph {
+  private drawDataCount:Number;
+  private xInterval:number;
+  private yInterval:number;
+
+  private canvasClass:Canvas;
+  private axisClass:Axis;
+  private graphClass:Graph;
+
+  private ctx:CanvasRenderingContext2D;
+
   /**
    * コンストラクタ
    * @param {text} canvas canvasのID
@@ -14,61 +27,28 @@ class DrawGraph {
    */
   constructor(canvas, width, height) {
     /** 描画データ ******************************************************* */
-    this.data = [];
-    this.data.drawDataCount = 0;
-    this.data.xInterval = 'undefined';
-    this.data.yInterval = 'undefined';
-    this.data.yCount = [];
+    this.drawDataCount = 0;
+    this.xInterval = null;
+    this.yInterval = null;
 
     /** CANVASの設定 ***************************************************** */
-    this.canvas = [];
-    /** canvasの縦横幅の設定 */
-    this.canvas.width = typeof width !== 'undefined' ? width : 800;
-    this.canvas.height = typeof height !== 'undefined' ? height : 500;
-
-    /** キャンバスの取得(canvasサイズのリサイズ) */
-    this.canvas.element = document.getElementById(canvas);
-    if (this.canvas.element === null) {
-      // canvas取得不可時にHTML最後に追加
-      const newCanvas = document.createElement('canvas');
-      document.body.appendChild(newCanvas);
-      this.canvas.element = newCanvas;
-    }
-    this.canvas.element.width = this.canvas.width;
-    this.canvas.element.height = this.canvas.height;
+    this.canvasClass = new Canvas(
+      canvas,
+      isNaN(<any>width) ? width : 800,
+      isNaN(<any>width) ? height : 500
+    );
     // TODO DOM描画前に呼び出されるとエラーとなる現象の回避
 
     /** 基準線に関わる設定 *********************************************** */
-    this.axis = [];
-    this.axis.xLineHeight = 'undefined';
-    this.axis.color = '#000000';
-    this.axis.autoVerticalScaleAdjust = true;
-
-    /** 軸描画用基準点設定（左下を基準点とする） */
-    this.axis.opX = 50;
-    this.axis.opY = this.canvas.height - 70;
-    this.axis.maxX = this.canvas.width - this.axis.opX;
-    this.axis.maxY = 50;
-
-    /** 縦軸の単位 */
-    this.axis.unitY = 50;
-    /** 横軸の単位 */
-    this.axis.unitX = 50;
-    /** 縦軸の単位記載 */
-    this.axis.unitXText = '横軸';
-    /** 横軸の単位記載 */
-    this.axis.unitYText = '縦軸';
-
+    this.axisClass = new Axis(this.canvasClass.width,this.canvasClass.height);
 
     /** コンテキストの設定 */
-    this.ctx = this.canvas.element.getContext('2d');
+    this.ctx = this.canvasClass.element.getContext('2d');
 
     /** タイトル関連の設定 *********************************************** */
-    this.graphTitle = [];
-    /** グラフタイトル */
-    this.graphTitle.text = '';
-    /** グラフタイトル表示位置(0:上,1:下) */
-    this.graphTitle.position = 0;
+    this.graphClass = new Graph;
+    this.graphClass.titleText = '';
+    this.graphClass.titlePositionFlag = 0;
 
     /** 文字色 */
     this.textColor = '#000000';
@@ -178,7 +158,7 @@ class DrawGraph {
    * @param {arrasy[text...]} legendText  凡例データ
    * @returns {void}
    */
-  DrawBarGraph(data, legendText) {
+  public DrawBarGraph(data, legendText) {
     if (!this.CheckCanvas()) {
       return;
     }
@@ -195,8 +175,8 @@ class DrawGraph {
 
     // グラフの描画
     // 棒グラフの幅調整(隣とかぶる場合のみ)
-    if (this.barGraph.barWidth * this.data.drawDataCount >= this.data.xInterval) {
-      this.barGraph.barWidth = this.data.xInterval / (this.data.drawDataCount + 1);
+    if (this.barGraph.barWidth * this.drawDataCount >= this.xInterval) {
+      this.barGraph.barWidth = this.xInterval / (this.drawDataCount + 1);
     }
 
     //     基準線との重複を避けるため、下線は基準-0.5、上方へ動かす。
@@ -204,14 +184,14 @@ class DrawGraph {
     for (let i = 0; i < this.data.xCount; i += 1) {
       const xPosition =
         this.axis.opX
-          + (this.data.xInterval / 2)
-          + (this.data.xInterval * i);
+          + (this.xInterval / 2)
+          + (this.xInterval * i);
       let yPosition;
 
-      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
+      for (let j = 1; j < this.drawDataCount + 1; j += 1) {
         // データを基準に合わせて処理
         const yData =
-          (this.data.data[i][j] / this.axis.unitY) * this.data.yInterval;
+          (this.data.data[i][j] / this.axis.unitY) * this.yInterval;
         if (yData > 0) {
           yPosition = this.axis.xLineHeight - 0.5;
         } else {
@@ -220,7 +200,7 @@ class DrawGraph {
 
         this.DrawFillBox(
           (xPosition
-            - ((this.data.drawDataCount * this.barGraph.barWidth) / 2))
+            - ((this.drawDataCount * this.barGraph.barWidth) / 2))
             + (this.barGraph.barWidth * (j - 1)),
           yPosition,
           this.barGraph.barWidth,
@@ -268,12 +248,12 @@ class DrawGraph {
 
     // グラフの描画
     for (let i = 0; i < this.data.xCount; i += 1) {
-      const xPosition = this.axis.opX + (this.data.xInterval / 2) + (this.data.xInterval * i);
+      const xPosition = this.axis.opX + (this.xInterval / 2) + (this.xInterval * i);
       const yPosition = this.axis.xLineHeight;
 
-      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
+      for (let j = 1; j < this.drawDataCount + 1; j += 1) {
         const yData =
-          (this.data.data[i][j] / this.axis.unitY) * this.data.yInterval;
+          (this.data.data[i][j] / this.axis.unitY) * this.yInterval;
         this.DrawFillCircle(
           xPosition,
           yPosition - yData,
@@ -285,8 +265,8 @@ class DrawGraph {
           this.DrawLine(
             xPosition,
             yPosition - yData,
-            xPosition + this.data.xInterval,
-            yPosition - ((this.data.data[i + 1][j] / this.axis.unitY) * this.data.yInterval),
+            xPosition + this.xInterval,
+            yPosition - ((this.data.data[i + 1][j] / this.axis.unitY) * this.yInterval),
             this.lineWidth,
             this.lineGraph.lineColorSet[j - 1],
           );
@@ -555,7 +535,7 @@ class DrawGraph {
     const unitX = typeof _unitX !== 'undefined' ? _unitX : this.axis.unitX;
     const unitY = typeof _unitY !== 'undefined' ? _unitY : this.axis.unitY;
 
-    const yCount = typeof _yCount !== 'undefined' ? _yCount : this.data.yCount;
+    const yCount = typeof _yCount !== 'undefined' ? _yCount : this.yCount;
 
     const unitXText = typeof _unitXText !== 'undefined' ? _unitXText : this.axis.unitXText;
     const unitYText = typeof _unitYText !== 'undefined' ? _unitYText : this.axis.unitYText;
@@ -707,15 +687,15 @@ class DrawGraph {
     this.data.data = data;
     // グラフ間隔の計算(X軸)
     this.data.xCount = this.data.data.length;
-    this.data.xInterval = (this.axis.maxX - this.axis.opX) / this.data.xCount;
+    this.xInterval = (this.axis.maxX - this.axis.opX) / this.data.xCount;
 
     // 1グループのデータ数の取得
-    this.data.drawDataCount = data[0].length - 1;
+    this.drawDataCount = data[0].length - 1;
 
     // Y軸最大値計算用
     this.data.maxYdata = 0;
     for (let i = 0; i < this.data.xCount; i += 1) {
-      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
+      for (let j = 1; j < this.drawDataCount + 1; j += 1) {
         // Y軸最大値の再計算
         if (this.data.maxYdata < this.data.data[i][j]) {
           this.data.maxYdata = this.data.data[i][j];
@@ -725,7 +705,7 @@ class DrawGraph {
     // Y軸最小値計算用(最小値がプラスの場合には0)
     this.data.minYdata = 0;
     for (let i = 0; i < this.data.xCount; i += 1) {
-      for (let j = 1; j < this.data.drawDataCount + 1; j += 1) {
+      for (let j = 1; j < this.drawDataCount + 1; j += 1) {
         // Y軸最小値の再計算
         if (this.data.minYdata > this.data.data[i][j]) {
           this.data.minYdata = this.data.data[i][j];
@@ -741,17 +721,17 @@ class DrawGraph {
     }
 
     // プラス方向、マイナス方向の基準数の設定
-    this.data.yCount.plus =
+    this.yCount.plus =
       Math.ceil(this.data.maxYdata / this.axis.unitY);
-    this.data.yCount.minus =
+    this.yCount.minus =
       Math.ceil(((-1) * this.data.minYdata) / this.axis.unitY);
 
-    this.data.yInterval =
+    this.yInterval =
       Math.abs(this.axis.maxY - this.axis.opY)
-        / (this.data.yCount.plus + this.data.yCount.minus);
+        / (this.yCount.plus + this.yCount.minus);
     // 横軸描画高さを計算
     this.axis.xLineHeight =
-      this.axis.opY - (this.data.yCount.minus * this.data.yInterval);
+      this.axis.opY - (this.yCount.minus * this.yInterval);
 
     return true;
   }

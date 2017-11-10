@@ -4,7 +4,6 @@
   "description": "JSのCanvas機能を使用したお絵描き帖。",
   "main": "src\\index.js",
   "dependencies": {
-    "babel": "^6.23.0"
   },
   "devDependencies": {
     "babel": "^6.23.0",
@@ -14,11 +13,16 @@
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
-    "eslint-plugin-react": "^7.4.0"
+    "eslint-plugin-react": "^7.4.0",
+    "tslint": "^5.8.0",
+    "tslint-config-airbnb": "^5.3.0",
+    "tsutils": "^2.12.2",
+    "typescript": "^2.6.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/babel src --out-file dist/canvas.js"
+    "build": "./node_modules/.bin/babel src --out-file dist/canvas.js",
+    "lint": "./node_modules/.bin/tslint src/**/*.ts"
   },
   "repository": {
     "type": "git",
