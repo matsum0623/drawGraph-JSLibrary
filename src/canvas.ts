@@ -1,6 +1,7 @@
 import { Canvas } from './class/Canvas.class';
 import { Axis } from './class/Axis.class';
-import { Graph } from './class/Graph.class';
+import { Title } from './class/Title.class';
+import { Legend } from './class/Legend.class';
 
 /**
  * Canvasによるグラフ描画ライブラリ
@@ -14,7 +15,8 @@ class DrawGraph {
 
   private canvasClass:Canvas;
   private axisClass:Axis;
-  private graphClass:Graph;
+  private titleClass:Title;
+  private legend:Legend;
 
   private ctx:CanvasRenderingContext2D;
 
@@ -35,119 +37,28 @@ class DrawGraph {
     this.canvasClass = new Canvas(
       canvas,
       isNaN(<any>width) ? width : 800,
-      isNaN(<any>width) ? height : 500
+      isNaN(<any>width) ? height : 500,
     );
     // TODO DOM描画前に呼び出されるとエラーとなる現象の回避
-
-    /** 基準線に関わる設定 *********************************************** */
-    this.axisClass = new Axis(this.canvasClass.width,this.canvasClass.height);
 
     /** コンテキストの設定 */
     this.ctx = this.canvasClass.element.getContext('2d');
 
+    /** 基準線に関わる設定 *********************************************** */
+    this.axisClass = new Axis(this.ctx, this.canvasClass.width,this.canvasClass.height);
+
     /** タイトル関連の設定 *********************************************** */
-    this.graphClass = new Graph;
-    this.graphClass.titleText = '';
-    this.graphClass.titlePositionFlag = 0;
+    this.titleClass = new Title;
 
-    /** 文字色 */
-    this.textColor = '#000000';
-    /** 文字フォント */
-    this.textFont = '18px "ＭＳ ゴシック"';
-    /** 文字アライメント */
-    this.textAlign = 'left';
+    this.legend = new Legend;
 
-    /** 直線の幅 */
-    this.lineWidth = 1;
-    /** 直線の色 */
-    this.lineColor = '#000000';
-    /** 塗りつぶしの色 */
-    this.fillColor = '#000000';
-    /** 破線間隔 */
-    this.lineDash = {
-      no: [0, 0],
-      yes: [10, 10],
-    };
-    /** 破線フラグ */
-    this.lineDashFlg = false;
-
-    /** 基準の色セット */
-    this.standardColorSet = [
-      '#FF2800', // 赤
-      '#FAF500', // 黄色
-      '#35A16B', // 緑
-      '#0041FF', // 青
-      '#66CCFF', // 空色
-      '#FF99A0', // ピンク
-      '#FF9900', // オレンジ
-      '#9A0079', // 紫
-      '#663300', // 茶
-      '#FFD1D1', // 明るいピンク
-      '#FFFF99', // クリーム
-      '#CBF266', // 明るい黄緑
-      '#B4EBFA', // 明るい空色
-      '#EDC58F', // ベージュ
-      '#87E7B0', // 明るい緑
-      '#C7B2DE', // 明るい紫
-    ];
-    /** 基準色(黒) */
-    this.standardColorBlack = '#000000';
-    /** 基準色(白) */
-    this.standardColorWhite = '#FFFFFF';
-    /** 基準の文字フォント */
-    this.standardFont = '18px "ＭＳ ゴシック"';
-    /** 基準の文字フォント（小文字） */
-    this.standardFontSmall = '10px "ＭＳ ゴシック"';
-
-    /** 折れ線グラフの設定 *********************************************** */
-    this.lineGraph = [];
-    /** 折れ線グラフ中の丸の大きさ */
-    this.lineGraph.circleRad = 2;
-    /** 折れ線グラフの線の太さ */
-    this.lineGraph.LineWidth = 1;
-    /** 折れ線グラフの線の色 */
-    this.lineGraph.lineColorSet = this.standardColorSet;
-    /** 折れ線グラフの色セット */
-    this.lineGraph.circleColorSet = this.standardColorSet;
-    /** 折れ線グラフ内文字の色 */
-    this.lineGraph.textColor = this.standardColorBlack;
-    /** 折れ線グラフ内文字のフォント */
-    this.lineGraph.textFont = this.standardFontSmall;
-
-    /** 棒グラフの設定 *************************************************** */
-    this.barGraph = [];
-    /** 棒グラフの幅 */
-    this.barGraph.barWidth = 10;
-    /** 棒グラフの枠線の色 */
-    this.barGraph.barLineColor = this.standardColorBlack;
-    /** 棒グラフの塗りつぶしの色 */
-    this.barGraph.barFillColor = this.standardColorSet;
-
-    /** 円グラフの設定 *************************************************** */
-    this.circleGraph = [];
-    /** 中心点のX座標 */
-    this.circleGraph.xp = this.canvas.width / 2;
-    /** 中心点のY座標 */
-    this.circleGraph.yp = this.canvas.height / 2;
-    /** 円グラフの半径 */
-    this.circleGraph.rad =
-      this.canvas.width < this.canvas.height ?
-        this.canvas.width * 0.35 : this.canvas.height * 0.35;
-    /** 円グラフの塗りつぶしの色 */
-    this.circleGraph.fillColor = this.standardColorSet;
-    /** 円グラフデータ描画位置(半径の何割の位置か) */
-    this.circleGraph.TextDrawRadRatio = 0.7;
-    /** 円グラフのデータ描画最小割合 */
-    this.circleGraph.textDrawMinDataRatio = 0.01;
-
-    /** 凡例の設定 ******************************************************* */
-    this.legend = [];
-    /** 凡例リスト */
-    this.legend.textArr = [];
-    /** 凡例の文字色 */
-    this.legend.textColor = this.standardColorBlack;
-    /** 凡例の文字の大きさ */
-    this.legend.textFont = this.standardFontSmall;
+    // /** 破線間隔 */
+    // this.lineDash = {
+    //   no: [0, 0],
+    //   yes: [10, 10],
+    // };
+    // /** 破線フラグ */
+    // this.lineDashFlg = false;
   }
 
   // メイン関数 //////////////////////////////////////////////////////////////
@@ -158,10 +69,11 @@ class DrawGraph {
    * @param {arrasy[text...]} legendText  凡例データ
    * @returns {void}
    */
-  public DrawBarGraph(data, legendText) {
+  public drawBarGraph(data:Object, legendText:string[]) {
     if (!this.CheckCanvas()) {
       return;
     }
+    
     this.legend.textArr = legendText;
 
     // データの処理
@@ -679,7 +591,7 @@ class DrawGraph {
    * @param {array} 描画データ
    * @return {array} 描画データ＋[drawDataCount:描画データ数,xInterval:x軸の間隔,yInterval:Y軸の間隔,xLineHeightx軸の描画高さ]
    */
-  dataProcessing(data) {
+  private dataProcessing(data:object) {
     if (data === null || data === '') {
       return false;
     }
